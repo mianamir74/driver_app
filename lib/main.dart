@@ -4,6 +4,8 @@ import 'package:app_links/app_links.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,12 +42,17 @@ Future<void> main() async {
   );
 
   await FirebaseAppCheck.instance.activate(
-    // playIntegrity works with Firebase App Distribution & Play Store.
-    // For raw sideloaded APKs, switch to AndroidProvider.debug and
-    // register the debug token in Firebase Console → App Check.
     androidProvider: AndroidProvider.playIntegrity,
     appleProvider: AppleProvider.deviceCheck,
   );
+
+  // ── Crashlytics ─────────────────────────────────────────────────────────────
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
 
   unawaited(DriverFcmService.instance.initialize());
 
