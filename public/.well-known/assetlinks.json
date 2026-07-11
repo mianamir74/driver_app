@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.driver_app",
+      "sha256_cert_fingerprints": [
+        "F0:35:39:B8:EB:27:6D:F3:A8:7D:0A:E7:B7:77:BA:67:F4:D5:63:D2:F4:B5:39:99:2E:10:78:73:24:40:91:D3"
+      ]
+    }
+  }
+]
