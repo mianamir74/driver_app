@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     storageBucket: 'goouts-f16db.firebasestorage.app',
-    iosBundleId: 'com.example.driverApp',
+    iosBundleId: 'com.goouts.driverapp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     storageBucket: 'goouts-f16db.firebasestorage.app',
-    iosBundleId: 'com.example.driverApp',
+    iosBundleId: 'com.goouts.driverapp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

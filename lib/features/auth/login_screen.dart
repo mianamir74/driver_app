@@ -55,7 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       if (user != null && mounted) {
-        await _navigateToHomeForExistingUser(user);
+        try {
+          await _navigateToHomeForExistingUser(user);
+        } catch (_) {
+          // Silently ignore — login screen remains visible, user can retry
+        }
       }
     });
   }
@@ -186,11 +190,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _navigateToHomeForExistingUser(User user) async {
     final firestore = FirebaseFirestore.instance;
-    final results = await Future.wait([
-      firestore.collection('drivers').doc(user.uid).get(),
-      firestore.collection('cab_drivers').doc(user.uid).get(),
-      firestore.collection('businesses').doc(user.uid).get(),
-    ]);
+    final List<DocumentSnapshot> results;
+    try {
+      results = await Future.wait([
+        firestore.collection('drivers').doc(user.uid).get(),
+        firestore.collection('cab_drivers').doc(user.uid).get(),
+        firestore.collection('businesses').doc(user.uid).get(),
+      ]);
+    } catch (e) {
+      if (!mounted) return;
+      await _showErrorDialog('Connection Error',
+          'Could not reach the server. Please check your connection and try again.\n\n$e');
+      return;
+    }
     if (!mounted) return;
     final bool isDriver    = results[0].exists;
     final bool isCabDriver = results[1].exists;
