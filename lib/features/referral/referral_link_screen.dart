@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../auth/models/driver_model.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:driver_app/features/common/goouts_sheet.dart';
 
 class ReferralLinkScreen extends StatefulWidget {
   const ReferralLinkScreen({super.key});
@@ -443,11 +444,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
   void _showSnackBarMessage(String message) {
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    GoOutsSheet.info(context, title: 'GoOuts', message: message);
   }
 
   Future<bool> _launchWhatsAppToPhone({
@@ -1050,9 +1047,7 @@ class _InviteDriverSheetState extends State<_InviteDriverSheet> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     if (!_hasAccepted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please confirm that this invite will be saved in My Referrals.'),
-      ));
+      GoOutsSheet.warning(context, title: 'Confirm Required', message: 'Please confirm that this invite will be saved in My Referrals.');
       return;
     }
 
@@ -1062,9 +1057,7 @@ class _InviteDriverSheetState extends State<_InviteDriverSheet> {
         _ReferralLinkScreenState._normalizeUkPhoneForWhatsApp(phoneRaw);
 
     if (phoneNormalized.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please enter a valid UK WhatsApp number.'),
-      ));
+      GoOutsSheet.warning(context, title: 'Invalid Number', message: 'Please enter a valid UK WhatsApp number.');
       return;
     }
 
@@ -1125,9 +1118,7 @@ class _InviteDriverSheetState extends State<_InviteDriverSheet> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Failed to save invite. Please try again.'),
-      ));
+      GoOutsSheet.error(context, title: 'Save Failed', message: 'Failed to save invite. Please try again.');
     }
   }
 

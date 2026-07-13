@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'support_ticket_chat_screen.dart';
+import 'package:driver_app/features/common/goouts_sheet.dart';
 
 class MyTicketsScreen extends StatefulWidget {
   final String sourceCollection; // 'drivers' | 'cab_drivers' | 'businesses'
@@ -408,10 +409,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                   .doc(doc.id)
                                   .update({'hiddenByDriver': true});
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Ticket removed'),
-                                    behavior: SnackBarBehavior.floating,
+                                GoOutsSheet.info(context, title: 'Removed', message: 'Ticket removed.',
                                     action: SnackBarAction(
                                       label: 'Undo',
                                       onPressed: () async {

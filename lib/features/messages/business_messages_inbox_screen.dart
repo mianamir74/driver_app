@@ -3,6 +3,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../support/support_ticket_chat_screen.dart';
+import 'package:driver_app/features/common/goouts_sheet.dart';
 
     class BusinessMessagesInboxScreen extends StatefulWidget {
       const BusinessMessagesInboxScreen({super.key});
@@ -327,11 +328,7 @@ import '../support/support_ticket_chat_screen.dart';
                             if (direction == DismissDirection.startToEnd) {
                               await _archiveMessage(currentUser.uid, docId);
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Message archived'),
-                                    backgroundColor: const Color(0xFF0891B2),
-                                    behavior: SnackBarBehavior.floating,
+                                GoOutsSheet.info(context, title: 'Archived', message: 'Message archived.',
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     action: SnackBarAction(
                                       label: 'Undo',
@@ -344,11 +341,7 @@ import '../support/support_ticket_chat_screen.dart';
                             } else {
                               await _deleteMessage(currentUser.uid, docId);
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: const Text('Message deleted'),
-                                    backgroundColor: const Color(0xFFDC2626),
-                                    behavior: SnackBarBehavior.floating,
+                                GoOutsSheet.error(context, title: 'Deleted', message: 'Message deleted.',
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   ),
                                 );

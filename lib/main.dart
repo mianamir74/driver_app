@@ -25,6 +25,7 @@ import 'features/support/support_ticket_chat_screen.dart';
 import 'firebase_options.dart';
 import 'features/legal/early_access_banner.dart';
 import 'services/fcm_service.dart';
+import 'package:driver_app/features/common/goouts_sheet.dart';
 
 
 
@@ -149,15 +150,8 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
             ? message.notification!.body!.trim()
             : 'You have received a new update.';
 
-    rootScaffoldMessengerKey.currentState
-      ?..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$title\n$body'),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+    final _ctx = rootNavigatorKey.currentContext;
+    if (_ctx != null) GoOutsSheet.info(_ctx, title: title, message: body);
   }
 
   Future<String> _readPendingAccountTypeValue() async {
@@ -232,22 +226,14 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
 
     if (resolvedFromMessage != null) {
       setState(() => _inviteLaunchData = resolvedFromMessage);
-      rootScaffoldMessengerKey.currentState
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text('Referral link detected from notification.'),
-          behavior: SnackBarBehavior.floating,
-        ));
+      final _rCtx = rootNavigatorKey.currentContext;
+      if (_rCtx != null) GoOutsSheet.info(_rCtx, title: 'Referral', message: 'Referral link detected from notification.');
       return;
     }
 
     if (FirebaseAuth.instance.currentUser == null) {
-      rootScaffoldMessengerKey.currentState
-        ?..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-          content: Text('Please log in to view your messages.'),
-          behavior: SnackBarBehavior.floating,
-        ));
+      final _lCtx = rootNavigatorKey.currentContext;
+      if (_lCtx != null) GoOutsSheet.warning(_lCtx, title: 'Login Required', message: 'Please log in to view your messages.');
       return;
     }
 

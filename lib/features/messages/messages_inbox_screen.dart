@@ -6,6 +6,7 @@ import 'message_detail_screen.dart';
 import '../support/my_tickets_button.dart';
 import '../support/support_ticket_chat_screen.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:driver_app/features/common/goouts_sheet.dart';
 
 class MessagesInboxScreen extends StatefulWidget {
   const MessagesInboxScreen({super.key});
@@ -780,11 +781,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
             messageId: message.id,
           );
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Message archived'),
-                backgroundColor: const Color(0xFF0891B2),
-                behavior: SnackBarBehavior.floating,
+            GoOutsSheet.info(context, title: 'Archived', message: 'Message archived.',
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 action: SnackBarAction(
                   label: 'Undo',
@@ -806,11 +803,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
             messageId: message.id,
           );
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Message deleted'),
-                backgroundColor: const Color(0xFFDC2626),
-                behavior: SnackBarBehavior.floating,
+            GoOutsSheet.error(context, title: 'Deleted', message: 'Message deleted.',
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             );

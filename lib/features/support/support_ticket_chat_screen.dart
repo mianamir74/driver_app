@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:driver_app/features/common/goouts_sheet.dart';
 
 class SupportTicketChatScreen extends StatefulWidget {
   final String ticketId;
@@ -167,9 +168,7 @@ class _SupportTicketChatScreenState
       _msgCtrl.clear();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), behavior: SnackBarBehavior.floating),
-        );
+        GoOutsSheet.error(context, title: 'Failed', message: 'Failed: $e');
       }
     }
     if (mounted) setState(() => _sending = false);
@@ -209,9 +208,7 @@ class _SupportTicketChatScreenState
       await _send(imageUrl: url);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $e'), behavior: SnackBarBehavior.floating),
-        );
+        GoOutsSheet.error(context, title: 'Upload Failed', message: 'Upload failed: $e');
       }
     }
     if (mounted) setState(() => _uploading = false);
@@ -258,9 +255,7 @@ class _SupportTicketChatScreenState
       if (mounted) await _showRatingSheet();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), behavior: SnackBarBehavior.floating),
-        );
+        GoOutsSheet.error(context, title: 'Error', message: 'Error: $e');
       }
     }
   }
@@ -406,10 +401,7 @@ class _SupportTicketChatScreenState
         'ratedAt':       FieldValue.serverTimestamp(),
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Thanks for your feedback! ⭐'),
-            backgroundColor: Color(0xFF16A34A),
+        GoOutsSheet.success(context, title: 'Thank You! ⭐', message: 'Thanks for your feedback!',
             behavior: SnackBarBehavior.floating));
       }
     } catch (_) {}
