@@ -482,10 +482,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Image.asset(
-                            'assets/logo/goouts_logo_login.png',
+                            'assets/logo/role_icon.png',
                             height: 190,
                             fit: BoxFit.contain,
-                            color: _goOutsBlue,
                           ),
                           SizedBox(height: 20),
                           AutoSizeText(

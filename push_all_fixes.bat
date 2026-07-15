@@ -5,7 +5,7 @@ del /f .git\index.lock 2>nul
 del /f .git\index_backup 2>nul
 
 git add -A
-git commit -m "Fix: GoOutsSheet import in referral screen, my_tickets_screen action param, address_lookup_service, snackbar replacements, all dart fixes"
+git commit -m "Fix: iOS app icon regenerated (correct logo), GoOutsSheet snackbar params, home screen ScaffoldMessenger orphan"
 git push
 
 echo === Done! ===

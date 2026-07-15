@@ -758,10 +758,12 @@ class _RoleCardButton extends StatelessWidget {
                     color: Colors.white.withOpacity(0.16),
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 30,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Image.asset(
+                      'assets/logo/role_icon.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -833,7 +835,6 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
       'business_intro_dont_show_again';
 
   static const List<String> _driverSlides = [
-    'assets/intro/Splash Logo_1.png',
     'assets/intro/Become Partner_2.png',
     'assets/intro/Invite Friends_3.png',
     'assets/intro/Commission Structure_3a.png',
@@ -844,7 +845,6 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
   ];
 
   static const List<String> _businessSlides = [
-    'assets/intro/Splash Logo_1.png',
     'assets/intro/Become Partner_2a.png',
     'assets/intro/Invite Friends_3.png',
     'assets/intro/Commission Structure_3a.png',
@@ -853,8 +853,7 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
     'assets/intro/Stay tuned_7.png',
   ];
 
-static const List<String> _cabDriverSlides = [
-    'assets/intro/Splash Logo_1.png',
+  static const List<String> _cabDriverSlides = [
     'assets/intro/Become Partner_2b.png',
     'assets/intro/Invite Friends_3.png',
     'assets/intro/Commission Structure_3a.png',
@@ -880,9 +879,9 @@ static const List<String> _cabDriverSlides = [
   }
 
   bool get _isLastSlide => _currentIndex == _slides.length - 1;
-  bool get _showBackButton => _currentIndex >= 1;
+  bool get _showBackButton => true;
   bool get _showNextButton => !_isLastSlide;
-  bool get _showIndicator => _currentIndex >= 1;
+  bool get _showIndicator => true;
 
   Future _finishIntro() async {
   if (_isFinishing) {
@@ -948,6 +947,14 @@ static const List<String> _cabDriverSlides = [
     );
   }
 
+  void _handleBack() {
+    if (_currentIndex == 0) {
+      Navigator.of(context).pop();
+    } else {
+      _previousSlide();
+    }
+  }
+
   Widget _buildTopBar() {
     if (_isLastSlide) {
       return SizedBox(
@@ -958,7 +965,7 @@ static const List<String> _cabDriverSlides = [
             children: [
               if (_showBackButton)
                 TextButton.icon(
-                  onPressed: _previousSlide,
+                  onPressed: _handleBack,
                   icon: const Icon(Icons.arrow_back_ios_new, size: 16),
                   label: const Text(
                     'BACK',
