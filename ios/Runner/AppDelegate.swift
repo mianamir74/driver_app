@@ -20,6 +20,14 @@ import FirebaseAuth
   }
 
   override func application(_ application: UIApplication,
+                             didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    // Log APNs registration failure — visible in Crashlytics non-fatal events.
+    // If this fires, Firebase Phone Auth will always fall back to reCAPTCHA.
+    print("⚠️ APNs registration FAILED: \(error.localizedDescription)")
+    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
+  }
+
+  override func application(_ application: UIApplication,
                              didReceiveRemoteNotification userInfo: [AnyHashable: Any],
                              fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
     if Auth.auth().canHandleNotification(userInfo) {
