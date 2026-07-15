@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:app_links/app_links.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -50,7 +49,7 @@ Future<void> main() async {
   };
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
 
-  unawaited(DriverFcmService.instance.initialize());
+  await DriverFcmService.instance.initialize();
 
   runApp(const GoOutsDriverApp());
 }
@@ -87,25 +86,20 @@ class AppLaunchCoordinator extends StatefulWidget {
 }
 
 class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
-  final AppLinks _appLinks = AppLinks();
-
-  StreamSubscription<Uri>? _linkSubscription;
   StreamSubscription<RemoteMessage>? _foregroundMessageSubscription;
   StreamSubscription<RemoteMessage>? _openedMessageSubscription;
 
-  bool _isCheckingInitialLink = true;
+  bool _isCheckingInitialLink = false;
   InviteLaunchData? _inviteLaunchData;
 
   @override
   void initState() {
     super.initState();
-    _initDeepLinkHandling();
     _initFcmHandling();
   }
 
   @override
   void dispose() {
-    _linkSubscription?.cancel();
     _foregroundMessageSubscription?.cancel();
     _openedMessageSubscription?.cancel();
     super.dispose();
@@ -301,44 +295,6 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
         ),
       ));
     });
-  }
-
-  Future<void> _initDeepLinkHandling() async {
-    try {
-      final Uri? initialUri = await _appLinks.getInitialLink();
-
-      if (initialUri != null) {
-        final InviteLaunchData? resolved =
-            await _resolveInviteLaunchData(initialUri);
-
-        if (resolved != null && mounted) {
-          setState(() {
-            _inviteLaunchData = resolved;
-          });
-        }
-      }
-    } catch (_) {
-      // Ignore initial deep-link errors and continue normal app flow.
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isCheckingInitialLink = false;
-        });
-      }
-
-      _linkSubscription = _appLinks.uriLinkStream.listen((Uri uri) async {
-        final InviteLaunchData? resolved =
-            await _resolveInviteLaunchData(uri);
-
-        if (!mounted || resolved == null) {
-          return;
-        }
-
-        setState(() {
-          _inviteLaunchData = resolved;
-        });
-      });
-    }
   }
 
   String _normalizedValue(String value) {

@@ -21,7 +21,6 @@ dependencies:
   url_launcher: ^6.3.2
   shared_preferences: ^2.5.5
   smooth_page_indicator: ^2.0.1
-  app_links: ^7.0.0
   gallery_saver_plus: ^3.2.9
   http: ^1.2.0
   auto_size_text: ^3.0.0
