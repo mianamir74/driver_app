@@ -1,8 +1,8 @@
 workflows:
 
-  # ─── GoOuts Driver Support App → TestFlight ────────────────────────────────
+  # ─── GoOuts Lead (Driver Support App) → TestFlight ────────────────────────
   goouts-driverapp-ios:
-    name: GoOuts Driver Support App - TestFlight
+    name: GoOuts Lead - TestFlight
     max_build_duration: 60
     instance_type: mac_mini_m2
 
@@ -14,7 +14,7 @@ workflows:
         - appstore_credentials
       vars:
         BUNDLE_ID: com.goouts.driverapp
-        APP_NAME: GoOuts Driver Support
+        APP_NAME: GoOuts Lead
 
     triggering:
       events:
@@ -69,8 +69,6 @@ workflows:
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-        beta_groups:
-          - Investors
       email:
         recipients:
           - mianamir74@gmail.com
