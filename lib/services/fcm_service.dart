@@ -53,9 +53,9 @@ class DriverFcmService {
     }
     _initialized = true;
 
-    FirebaseMessaging.onBackgroundMessage(
-      firebaseMessagingBackgroundHandler,
-    );
+    // NOTE: FirebaseMessaging.onBackgroundMessage() is registered in main()
+    // before runApp() as required by Firebase Messaging docs. It must not be
+    // called here because this method now runs after the first Flutter frame.
 
     await _messaging.setAutoInitEnabled(true);
 

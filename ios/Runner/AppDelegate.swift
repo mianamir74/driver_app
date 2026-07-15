@@ -15,7 +15,11 @@ import FirebaseAuth
 
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    // DO NOT call Auth.auth().setAPNSToken() here.
+    // The Firebase Auth delegate proxy (FirebaseAppDelegateProxyEnabled = YES by default)
+    // intercepts this callback and stores the token internally.
+    // Calling setAPNSToken() manually at startup causes a preconditionFailure crash
+    // because there is no pending phone-verification callback yet.
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 

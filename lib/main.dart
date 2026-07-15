@@ -49,7 +49,15 @@ Future<void> main() async {
   };
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
 
-  await DriverFcmService.instance.initialize();
+  // Register the background message handler BEFORE runApp() — this is required
+  // by Firebase Messaging and must happen before the isolate is spawned.
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // NOTE: Full FCM initialisation (requestPermission, getToken) is intentionally
+  // deferred to AppLaunchCoordinator.initState() via addPostFrameCallback.
+  // Calling it here — before runApp() and before the Flutter UIWindow is active —
+  // causes Firebase Auth's async Swift code to fire a preconditionFailure crash
+  // because no foreground UIWindowScene is accessible yet (~2 s into launch).
 
   runApp(const GoOutsDriverApp());
 }
@@ -106,6 +114,8 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
   }
 
   void _initFcmHandling() {
+    // Subscribe to the broadcast streams immediately — they are ready as soon as
+    // DriverFcmService is constructed, before initialize() is called.
     _foregroundMessageSubscription =
         DriverFcmService.instance.foregroundMessages.listen(
       _handleForegroundMessage,
@@ -116,16 +126,21 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
       _handleOpenedMessage,
     );
 
-    final RemoteMessage? initialOpenedMessage =
-        DriverFcmService.instance.consumeInitialOpenedMessage();
+    // Defer full FCM initialisation until after the first frame so that the
+    // Flutter UIWindow is fully active before Firebase async Swift code runs.
+    // This prevents a preconditionFailure crash in Firebase Auth's APNs handler.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await DriverFcmService.instance.initialize();
+      if (!mounted) return;
 
-    if (initialOpenedMessage != null) {
-      unawaited(_handleOpenedMessage(initialOpenedMessage));
-    }
+      final RemoteMessage? initialOpenedMessage =
+          DriverFcmService.instance.consumeInitialOpenedMessage();
+      if (initialOpenedMessage != null) {
+        unawaited(_handleOpenedMessage(initialOpenedMessage));
+      }
 
-    unawaited(
-      DriverFcmService.instance.syncTokenForCurrentUser(),
-    );
+      unawaited(DriverFcmService.instance.syncTokenForCurrentUser());
+    });
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
