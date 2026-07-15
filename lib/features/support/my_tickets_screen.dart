@@ -409,18 +409,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                                   .doc(doc.id)
                                   .update({'hiddenByDriver': true});
                               if (context.mounted) {
-                                GoOutsSheet.info(context, title: 'Removed', message: 'Ticket removed.',
-                                    action: SnackBarAction(
-                                      label: 'Undo',
-                                      onPressed: () async {
-                                        await FirebaseFirestore.instance
-                                            .collection('support_requests')
-                                            .doc(doc.id)
-                                            .update({'hiddenByDriver': false});
-                                      },
-                                    ),
-                                  ),
-                                );
+                                GoOutsSheet.info(context, title: 'Removed', message: 'Ticket removed.');
                               }
                             } catch (_) {}
                           },

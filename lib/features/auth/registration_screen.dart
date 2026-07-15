@@ -119,6 +119,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // True when both OS and Mapbox failed and the driver chose to type manually.
   // In this mode postcode verification is skipped at submit.
   bool _isManualAddressMode = false;
+  List<MapboxAddressResult> _addressSuggestions = [];
 
   String _accountType = 'driver';
   AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
@@ -759,42 +760,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      // Mapbox: validates postcode, returns city + coordinates.
-      final MapboxAddressResult? mapbox =
+      // Mapbox: validates postcode → returns up to 10 real addresses.
+      final List<MapboxAddressResult> results =
           await _addressService.validatePostcode(postcode);
 
       if (!mounted) return;
 
-      if (mapbox != null) {
-        final String resolvedCountry = _inferCountryFromPostcode(postcode);
-        final List<String> cityOptions =
-            AppLists.cityOptionsForCountry(resolvedCountry);
-
-        // Use our postcode → city table first (reliable for UK).
-        // Fall back to Mapbox city string if postcode area is not mapped.
-        final String? inferredCity =
-            AddressLookupService.inferCityFromPostcode(postcode);
-        final String? matchedCity = inferredCity != null
-            ? _matchCityOption(inferredCity, cityOptions)
-            : (mapbox.city.isNotEmpty
-                ? _matchCityOption(mapbox.city, cityOptions)
-                : null);
-
-        // Auto-fill town from Mapbox (e.g. "Wembley", "Hackney").
-        if (mapbox.city.isNotEmpty) {
-          _townController.text = mapbox.city.toUpperCase();
-        }
+      if (results.isNotEmpty) {
         setState(() {
           _isConfirmingPostcode = false;
-          _selectedCountry = resolvedCountry;
-          _selectedCity = matchedCity;
-          _verifiedUprn = '';
-          _verifiedFullAddress = mapbox.fullAddress;
-          _verifiedLatitude = mapbox.latitude;
-          _verifiedLongitude = mapbox.longitude;
-          _isPostcodeVerified = true;
-          _isManualAddressMode = false;
-          _addressFieldsLocked = false;
+          _addressSuggestions = results;
         });
         await Future<void>.delayed(const Duration(milliseconds: 150));
         if (_addressSectionKey.currentContext != null) {
@@ -819,6 +794,31 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
       await _showAddressRetryDialog(postcode);
     }
+  }
+
+  /// Called when the driver taps an address from the postcode dropdown.
+  void _onAddressSelected(MapboxAddressResult address) {
+    final String resolvedCountry = _inferCountryFromPostcode(address.postcode);
+    final List<String> cityOptions = AppLists.cityOptionsForCountry(resolvedCountry);
+    final String? inferredCity = AddressLookupService.inferCityFromPostcode(address.postcode);
+    final String? matchedCity = inferredCity != null
+        ? _matchCityOption(inferredCity, cityOptions)
+        : (address.city.isNotEmpty ? _matchCityOption(address.city, cityOptions) : null);
+    setState(() {
+      _postcodeController.text   = address.postcode;
+      _houseNoController.text    = address.houseNumber ?? '';
+      _streetNameController.text = address.street ?? '';
+      _townController.text       = (address.town ?? address.city).toUpperCase();
+      _selectedCountry           = resolvedCountry;
+      _selectedCity              = matchedCity;
+      _verifiedFullAddress       = address.fullAddress;
+      _verifiedLatitude          = address.latitude;
+      _verifiedLongitude         = address.longitude;
+      _isPostcodeVerified        = true;
+      _isManualAddressMode       = false;
+      _addressFieldsLocked       = false;
+      _addressSuggestions        = [];
+    });
   }
 
   /// Tapped when the user picks "Edit manually" / "Enter manually".
@@ -2669,6 +2669,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           lockAddressFields: _addressFieldsLocked,
           onConfirmPostcode: _confirmPostcode,
           onEditManually: _handleEditManually,
+          addressSuggestions: _addressSuggestions,
+          onAddressSelected: _onAddressSelected,
           inputDecorationBuilder: _inputDecoration,
           upperCaseFormattersBuilder: _upperCaseFormatters,
           requiredValidator: _requiredValidator,

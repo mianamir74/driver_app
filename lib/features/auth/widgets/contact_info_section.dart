@@ -3,13 +3,14 @@ import 'package:flutter/services.dart';
 
 import 'registration_section_card.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import '../../../services/address_lookup_service.dart';
 
 /// Driver registration — Address section.
 ///
 /// Address field order:
-///   1. Postcode  (user types → Look Up button → Mapbox validates)
-///   2. House / Business No or Name  (manual)
-///   3. Street / Road Name           (manual)
+///   1. Postcode  (user types → Look Up → dropdown of real addresses appears)
+///   2. House / Business No or Name  (auto-filled when address picked)
+///   3. Street / Road Name           (auto-filled when address picked)
 ///   4. Town                         (auto-filled from Mapbox)
 ///   5. City                         (auto-filled from postcode mapping)
 ///   6. Country                      (auto-filled from postcode prefix)
@@ -34,6 +35,10 @@ class ContactInfoSection extends StatelessWidget {
 
   final VoidCallback onConfirmPostcode;
   final VoidCallback? onEditManually;
+
+  /// Addresses returned by the last Look Up — shown as a dropdown.
+  final List<MapboxAddressResult> addressSuggestions;
+  final ValueChanged<MapboxAddressResult>? onAddressSelected;
 
   final InputDecoration Function(String) inputDecorationBuilder;
   final List<TextInputFormatter> Function() upperCaseFormattersBuilder;
@@ -67,9 +72,11 @@ class ContactInfoSection extends StatelessWidget {
     required this.countryValidator,
     required this.cityValidator,
     this.onEditManually,
+    this.addressSuggestions = const [],
+    this.onAddressSelected,
   });
 
-  static const Color _goOutsBlue = Color(0xFF0392CA);
+  static const Color _goOutsBlue   = Color(0xFF0392CA);
   static const Color _successGreen = Color(0xFF16A34A);
 
   bool _hasText(TextEditingController controller) =>
@@ -172,6 +179,84 @@ class ContactInfoSection extends StatelessWidget {
             ],
           ),
 
+          // ── Address dropdown (after Look Up returns results) ──────────
+          if (addressSuggestions.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _goOutsBlue.withOpacity(0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+                    child: Text(
+                      'Select your address:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  ...addressSuggestions.map((addr) => InkWell(
+                    onTap: () => onAddressSelected?.call(addr),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_on_outlined,
+                              color: _goOutsBlue, size: 16),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  addr.fullAddress
+                                      .split(',')
+                                      .take(2)
+                                      .join(','),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF0D1B3E),
+                                  ),
+                                ),
+                                Text(
+                                  addr.postcode,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.chevron_right_rounded,
+                              color: Colors.grey, size: 16),
+                        ],
+                      ),
+                    ),
+                  )),
+                  const SizedBox(height: 4),
+                ],
+              ),
+            ),
+          ],
+
           // ── Status banners ───────────────────────────────────────────
           const SizedBox(height: 8),
           if (isManualAddressMode)
@@ -218,7 +303,7 @@ class ContactInfoSection extends StatelessWidget {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Postcode confirmed — fill in your house number, street and town below.',
+                      'Address confirmed — your details have been filled in below.',
                       style: TextStyle(
                         color: _successGreen,
                         fontSize: 12,

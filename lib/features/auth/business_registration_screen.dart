@@ -131,6 +131,7 @@ class _BusinessRegistrationScreenState
   double? _verifiedLongitude;
   // Locked only when address was actually auto-filled from OS bottom sheet.
   bool _addressFieldsLocked = false;
+  List<MapboxAddressResult> _addressSuggestions = [];
 
   XFile? _selfieImage;
 
@@ -453,54 +454,27 @@ class _BusinessRegistrationScreenState
     });
 
     try {
-      // Mapbox: validates postcode, returns city + coordinates.
-      final MapboxAddressResult? mapbox =
+      // Mapbox: validates postcode → returns up to 10 real addresses.
+      final List<MapboxAddressResult> results =
           await _addressService.validatePostcode(postcode);
 
       if (!mounted) return;
 
-      if (mapbox == null) {
+      if (results.isNotEmpty) {
         setState(() {
           _isConfirmingPostcode = false;
-          _isPostcodeVerified = false;
-          _addressFieldsLocked = false;
+          _addressSuggestions = results;
         });
-        _showSnackBarMessage(
-          'Postcode not found. Please check it or tap "Enter manually" below.',
-        );
         return;
       }
 
-      final String resolvedCountry = _inferCountryFromPostcode(postcode);
-      final List<String> cityOptions =
-          _cityOptionsByCountry[resolvedCountry] ?? <String>[];
-
-      // Use our postcode → city table first (reliable for UK).
-      // Fall back to Mapbox city string if postcode area is not mapped.
-      final String? inferredCity =
-          AddressLookupService.inferCityFromPostcode(postcode);
-      final String? matchedCity = inferredCity != null
-          ? _matchCityOption(inferredCity, cityOptions)
-          : (mapbox.city.isNotEmpty
-              ? _matchCityOption(mapbox.city, cityOptions)
-              : null);
-
-      if (mapbox.city.isNotEmpty) {
-        _townController.text = mapbox.city.toUpperCase();
-      }
       setState(() {
         _isConfirmingPostcode = false;
-        _selectedCountry = resolvedCountry;
-        _selectedCity = matchedCity;
-        _verifiedUprn = '';
-        _verifiedFullAddress = mapbox.fullAddress;
-        _verifiedLatitude = mapbox.latitude;
-        _verifiedLongitude = mapbox.longitude;
-        _isPostcodeVerified = true;
+        _isPostcodeVerified = false;
         _addressFieldsLocked = false;
       });
       _showSnackBarMessage(
-        'Postcode confirmed. Please fill in your shop number, road name and town below.',
+        'Postcode not found. Please check it or tap "Enter manually" below.',
       );
     } catch (e) {
       if (!mounted) return;
@@ -512,6 +486,30 @@ class _BusinessRegistrationScreenState
         'We could not verify this postcode right now. Please try again.',
       );
     }
+  }
+
+  /// Called when the owner taps an address from the postcode dropdown.
+  void _onAddressSelected(MapboxAddressResult address) {
+    final String resolvedCountry = _inferCountryFromPostcode(address.postcode);
+    final List<String> cityOptions = _cityOptionsByCountry[resolvedCountry] ?? <String>[];
+    final String? inferredCity = AddressLookupService.inferCityFromPostcode(address.postcode);
+    final String? matchedCity = inferredCity != null
+        ? _matchCityOption(inferredCity, cityOptions)
+        : (address.city.isNotEmpty ? _matchCityOption(address.city, cityOptions) : null);
+    setState(() {
+      _postcodeController.text   = address.postcode;
+      _shopUnitNoController.text           = address.houseNumber ?? '';
+      _roadNameController.text          = address.street ?? '';
+      _townController.text       = (address.town ?? address.city).toUpperCase();
+      _selectedCountry           = resolvedCountry;
+      _selectedCity              = matchedCity;
+      _verifiedFullAddress       = address.fullAddress;
+      _verifiedLatitude          = address.latitude;
+      _verifiedLongitude         = address.longitude;
+      _isPostcodeVerified        = true;
+      _addressFieldsLocked       = false;
+      _addressSuggestions        = [];
+    });
   }
 
   /// Tapped when the owner picks "Edit manually". Clears verified state.
@@ -1310,6 +1308,84 @@ class _BusinessRegistrationScreenState
                     ],
                   ),
                   SizedBox(height: 8),
+
+                  // ── Address dropdown (after Look Up returns results) ────
+                  if (_addressSuggestions.isNotEmpty) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Color(0xFF0392CA).withOpacity(0.2)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+                            child: Text(
+                              'Select your address:',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          ..._addressSuggestions.map((addr) => InkWell(
+                            onTap: () => _onAddressSelected(addr),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.location_on_outlined,
+                                      color: Color(0xFF0392CA), size: 16),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          addr.fullAddress
+                                              .split(',')
+                                              .take(2)
+                                              .join(','),
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF0D1B3E),
+                                          ),
+                                        ),
+                                        Text(
+                                          addr.postcode,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_right_rounded,
+                                      color: Colors.grey, size: 16),
+                                ],
+                              ),
+                            ),
+                          )),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
 
                   // ── Verified subtitle / Manual entry link ──────────────
                   if (_isPostcodeVerified)
