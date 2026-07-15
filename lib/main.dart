@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import 'package:firebase_app_check/firebase_app_check.dart';
+// firebase_app_check removed — DeviceCheck not configured in Firebase
 import 'features/auth/business_referral_code_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/referral_code_screen.dart';
@@ -40,11 +40,6 @@ Future<void> main() async {
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  await FirebaseAppCheck.instance.activate(
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.deviceCheck,
   );
 
   // ── Crashlytics ─────────────────────────────────────────────────────────────

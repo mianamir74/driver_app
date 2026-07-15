@@ -25,7 +25,7 @@ dependencies:
   gallery_saver_plus: ^3.2.9
   http: ^1.2.0
   auto_size_text: ^3.0.0
-  firebase_app_check: ^0.4.2
+  # firebase_app_check: ^0.4.2  # removed — DeviceCheck not configured
 
 dev_dependencies:
   flutter_test:
