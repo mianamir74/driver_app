@@ -401,8 +401,7 @@ class _SupportTicketChatScreenState
         'ratedAt':       FieldValue.serverTimestamp(),
       });
       if (mounted) {
-        GoOutsSheet.success(context, title: 'Thank You! ⭐', message: 'Thanks for your feedback!',
-            behavior: SnackBarBehavior.floating));
+        GoOutsSheet.success(context, title: 'Thank You! ⭐', message: 'Thanks for your feedback!');
       }
     } catch (_) {}
   }

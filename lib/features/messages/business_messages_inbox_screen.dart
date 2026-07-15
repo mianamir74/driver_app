@@ -328,23 +328,12 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
                             if (direction == DismissDirection.startToEnd) {
                               await _archiveMessage(currentUser.uid, docId);
                               if (context.mounted) {
-                                GoOutsSheet.info(context, title: 'Archived', message: 'Message archived.',
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    action: SnackBarAction(
-                                      label: 'Undo',
-                                      textColor: Colors.white,
-                                      onPressed: () => _unarchiveMessage(currentUser.uid, docId),
-                                    ),
-                                  ),
-                                );
+                                GoOutsSheet.info(context, title: 'Archived', message: 'Message archived.');
                               }
                             } else {
                               await _deleteMessage(currentUser.uid, docId);
                               if (context.mounted) {
-                                GoOutsSheet.error(context, title: 'Deleted', message: 'Message deleted.',
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                );
+                                GoOutsSheet.error(context, title: 'Deleted', message: 'Message deleted.');
                               }
                             }
                           },

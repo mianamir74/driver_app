@@ -781,19 +781,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
             messageId: message.id,
           );
           if (context.mounted) {
-            GoOutsSheet.info(context, title: 'Archived', message: 'Message archived.',
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  textColor: Colors.white,
-                  onPressed: () => _unarchiveMessage(
-                    collection: account.collection,
-                    userId: account.uid,
-                    messageId: message.id,
-                  ),
-                ),
-              ),
-            );
+            GoOutsSheet.info(context, title: 'Archived', message: 'Message archived.');
           }
         } else {
           // Delete
@@ -997,7 +985,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
               }
 
               final List<_InboxMessage> messages = (snapshot.data?.docs ?? <QueryDocumentSnapshot<Map<String, dynamic>>>[])
-                  .map(_buildMessage)
+                  .map<_InboxMessage>(_buildMessage)
                   .toList();
 
               final int unreadCount = messages.where((message) => !message.isRead).length;
