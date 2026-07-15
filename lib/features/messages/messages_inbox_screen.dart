@@ -791,10 +791,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
             messageId: message.id,
           );
           if (context.mounted) {
-            GoOutsSheet.error(context, title: 'Deleted', message: 'Message deleted.',
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            );
+            GoOutsSheet.error(context, title: 'Deleted', message: 'Message deleted.');
           }
         }
       },

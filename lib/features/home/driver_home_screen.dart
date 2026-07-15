@@ -260,8 +260,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   }
 
   void _showComingSoon(String title) {
-    ScaffoldMessenger.of(context)
-      GoOutsSheet.info(context, title: 'Coming Soon', message: '$title will be connected next.');
+    GoOutsSheet.info(context, title: 'Coming Soon', message: '$title will be connected next.');
   }
 
   void _openMenu({
