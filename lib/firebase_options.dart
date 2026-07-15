@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD0u_n7kV2uPuSKFjaqYOyEiioDR5Y5d9o',
-    appId: '1:289872853637:ios:df3c47db5427da995bc7ec',
+    appId: '1:289872853637:ios:33ec5443f74da8515bc7ec',
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     storageBucket: 'goouts-f16db.firebasestorage.app',
@@ -60,7 +60,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD0u_n7kV2uPuSKFjaqYOyEiioDR5Y5d9o',
-    appId: '1:289872853637:ios:df3c47db5427da995bc7ec',
+    appId: '1:289872853637:ios:33ec5443f74da8515bc7ec',
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     storageBucket: 'goouts-f16db.firebasestorage.app',

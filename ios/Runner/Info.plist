@@ -13,7 +13,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>REPLACE_WITH_REVERSED_CLIENT_ID_FROM_GOOGLESERVICE_INFO_PLIST</string>
+				<string>com.googleusercontent.apps.289872853637-m4oifqpojhgc33vrnf94vte2o2mqujm9</string>
 			</array>
 		</dict>
 	</array>
