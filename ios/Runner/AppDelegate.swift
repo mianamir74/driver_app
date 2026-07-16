@@ -15,11 +15,12 @@ import FirebaseAuth
 
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    // DO NOT call Auth.auth().setAPNSToken() here.
-    // The Firebase Auth delegate proxy (FirebaseAppDelegateProxyEnabled = YES by default)
-    // intercepts this callback and stores the token internally.
-    // Calling setAPNSToken() manually at startup causes a preconditionFailure crash
-    // because there is no pending phone-verification callback yet.
+    // Forward APNs token to Firebase Auth BEFORE calling super.
+    // This lets Firebase Auth claim the token synchronously, preventing
+    // Firebase Messaging's async Swift Task from racing on the same token
+    // and firing a preconditionFailure at Runner+1296561.
+    // The consumer app (goouts_app) uses this same pattern and works correctly.
+    Auth.auth().setAPNSToken(deviceToken, type: .unknown)
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 

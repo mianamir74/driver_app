@@ -57,8 +57,6 @@ class DriverFcmService {
     // before runApp() as required by Firebase Messaging docs. It must not be
     // called here because this method now runs after the first Flutter frame.
 
-    await _messaging.setAutoInitEnabled(true);
-
     // DO NOT call requestPermission() here.
     // requestPermission() triggers UIApplication.registerForRemoteNotifications()
     // internally, causing a SECOND APNs token delivery. Firebase's async Swift
