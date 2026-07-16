@@ -16,6 +16,7 @@ import '../support/help_support_screen.dart';
 import '../../main.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
+import 'package:driver_app/services/fcm_service.dart';
 
 class BusinessHomeScreen extends StatefulWidget {
   const BusinessHomeScreen({super.key});
@@ -47,6 +48,12 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
   void initState() {
     super.initState();
     _loadDashboard();
+    // Request notification permission after first frame (post-login).
+    // Must NOT be called at app startup — doing so triggers a second APNs
+    // registration that causes a preconditionFailure crash in Firebase iOS SDK.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DriverFcmService.instance.askPermission();
+    });
   }
 
   Future<void> _loadDashboard() async {

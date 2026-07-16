@@ -59,7 +59,15 @@ class DriverFcmService {
 
     await _messaging.setAutoInitEnabled(true);
 
-    final NotificationSettings settings = await _requestPermission();
+    // DO NOT call requestPermission() here.
+    // requestPermission() triggers UIApplication.registerForRemoteNotifications()
+    // internally, causing a SECOND APNs token delivery. Firebase's async Swift
+    // code processing that second token fires a preconditionFailure crash.
+    // Solution: check current settings only (no APNs side-effect).
+    // Permission is requested later via askPermission(), called from the home
+    // screen after login — exactly matching the working consumer-app pattern.
+    final NotificationSettings settings =
+        await _messaging.getNotificationSettings();
     await _syncTokenForCurrentUser(
       notificationsEnabled: _isNotificationsEnabled(settings),
     );
@@ -94,6 +102,22 @@ class DriverFcmService {
     final RemoteMessage? message = _initialOpenedMessage;
     _initialOpenedMessage = null;
     return message;
+  }
+
+  /// Request notification permission from the user.
+  /// Call this from the home screen via addPostFrameCallback (post-login).
+  /// Safe to call multiple times — iOS won't re-prompt if already determined.
+  /// This is intentionally NOT called in initialize() to avoid the second
+  /// APNs registration that caused the preconditionFailure crash.
+  Future<void> askPermission() async {
+    try {
+      final NotificationSettings settings = await _requestPermission();
+      await _syncTokenForCurrentUser(
+        notificationsEnabled: _isNotificationsEnabled(settings),
+      );
+    } catch (e) {
+      debugPrint('FCM askPermission error: $e');
+    }
   }
 
   Future<NotificationSettings> requestPermissionAgain() async {
@@ -156,25 +180,29 @@ class DriverFcmService {
   Future<void> _syncTokenForCurrentUser({
     bool? notificationsEnabled,
   }) async {
-    final User? user = _auth.currentUser;
+    try {
+      final User? user = _auth.currentUser;
 
-    if (user == null) {
-      debugPrint('FCM token sync skipped: no logged-in user.');
-      return;
+      if (user == null) {
+        debugPrint('FCM token sync skipped: no logged-in user.');
+        return;
+      }
+
+      final String? token = await _messaging.getToken();
+
+      if (token == null || token.isEmpty) {
+        debugPrint('FCM token sync skipped: token is null or empty.');
+        return;
+      }
+
+      await _saveTokenForCurrentUser(
+        token: token,
+        notificationsEnabled:
+            notificationsEnabled ?? await _areNotificationsEnabledNow(),
+      );
+    } catch (e) {
+      debugPrint('FCM token sync error: $e');
     }
-
-    final String? token = await _messaging.getToken();
-
-    if (token == null || token.isEmpty) {
-      debugPrint('FCM token sync skipped: token is null or empty.');
-      return;
-    }
-
-    await _saveTokenForCurrentUser(
-      token: token,
-      notificationsEnabled:
-          notificationsEnabled ?? await _areNotificationsEnabledNow(),
-    );
   }
 
   Future<void> _saveTokenForCurrentUser({
