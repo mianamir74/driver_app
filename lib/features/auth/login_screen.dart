@@ -312,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: e164PhoneNumber,
-        timeout: const Duration(seconds: 60),
+        timeout: Duration.zero,
         verificationCompleted: (PhoneAuthCredential credential) async {
           try {
             await FirebaseAuth.instance.signInWithCredential(credential);
