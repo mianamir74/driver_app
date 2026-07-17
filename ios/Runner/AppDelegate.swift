@@ -15,11 +15,12 @@ import FirebaseAuth
 
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    // Forward APNs token to Firebase Auth BEFORE calling super.
-    // This lets Firebase Auth claim the token synchronously, preventing
-    // Firebase Messaging's async Swift Task from racing on the same token
-    // and firing a preconditionFailure at Runner+1296561.
-    // The consumer app (goouts_app) uses this same pattern and works correctly.
+    // Forward APNs token to Firebase Auth.
+    // Firebase Phone Auth uses reCAPTCHA fallback (no APNs key configured in
+    // Firebase Console for this app). setAPNSToken is safe to call regardless —
+    // Firebase stores the token but falls back to reCAPTCHA since there is no
+    // server-side APNs auth key, avoiding the Swift async Task crash seen in
+    // builds 11-14.
     Auth.auth().setAPNSToken(deviceToken, type: .unknown)
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
