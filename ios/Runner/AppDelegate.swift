@@ -15,22 +15,15 @@ import FirebaseAuth
 
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    // Forward APNs token to Firebase Auth.
-    // Firebase Phone Auth uses reCAPTCHA fallback (no APNs key configured in
-    // Firebase Console for this app). setAPNSToken is safe to call regardless —
-    // Firebase stores the token but falls back to reCAPTCHA since there is no
-    // server-side APNs auth key, avoiding the Swift async Task crash seen in
-    // builds 11-14.
-    Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    // FirebaseAppDelegateProxyEnabled = false (Info.plist) disables Firebase SDK
+    // swizzling, so Firebase Auth cannot auto-intercept this token.
+    // We intentionally do NOT call Auth.auth().setAPNSToken() here.
+    // Without an APNs token, Firebase Auth immediately falls back to reCAPTCHA
+    // for phone number verification — no 30-second APNs wait, no Swift async
+    // Task crash (EXC_BREAKPOINT / SIGTRAP seen in builds 11-15).
+    // We still call super so Firebase Messaging receives the token for FCM
+    // push notifications after the user is logged in.
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
-  }
-
-  override func application(_ application: UIApplication,
-                             didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    // Log APNs registration failure — visible in Crashlytics non-fatal events.
-    // If this fires, Firebase Phone Auth will always fall back to reCAPTCHA.
-    print("⚠️ APNs registration FAILED: \(error.localizedDescription)")
-    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
   }
 
   override func application(_ application: UIApplication,
