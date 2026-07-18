@@ -312,59 +312,35 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: e164PhoneNumber,
-        timeout: Duration.zero,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          try {
-            await FirebaseAuth.instance.signInWithCredential(credential);
-
-            if (!mounted) {
-              return;
-            }
-
+        verificationCompleted: (PhoneAuthCredential credential) {
+          // Non-async: fire-and-forget signIn so Firebase's Swift Task
+          // is not held open by a Dart await.
+          FirebaseAuth.instance.signInWithCredential(credential).then((_) {
+            if (!mounted) return;
             GoOutsSheet.success(context, title: 'Verified', message: 'Phone number verified successfully.');
-          } on FirebaseAuthException catch (e) {
-            if (!mounted) {
-              return;
+          }).catchError((Object e) {
+            if (!mounted) return;
+            if (e is FirebaseAuthException) {
+              _showErrorDialog('Verification Failed', _firebaseErrorMessage(e));
             }
-
-            await _showErrorDialog(
-              'Verification Failed',
-              _firebaseErrorMessage(e),
-            );
-          } finally {
-            if (!mounted) {
-              return;
-            }
-
-            setState(() {
-              _isLoading = false;
-            });
-          }
-        },
-        verificationFailed: (FirebaseAuthException e) async {
-          if (!mounted) {
-            return;
-          }
-
-          setState(() {
-            _isLoading = false;
+          }).whenComplete(() {
+            if (!mounted) return;
+            setState(() { _isLoading = false; });
           });
-
-          await _showErrorDialog(
-            'OTP Failed',
-            _firebaseErrorMessage(e),
-          );
         },
-        codeSent: (String verificationId, int? resendToken) async {
-          if (!mounted) {
-            return;
-          }
-
-          setState(() {
-            _isLoading = false;
-          });
-
-          await Navigator.of(context).push(
+        verificationFailed: (FirebaseAuthException e) {
+          // Non-async: no await inside Firebase callback.
+          if (!mounted) return;
+          setState(() { _isLoading = false; });
+          _showErrorDialog('OTP Failed', _firebaseErrorMessage(e));
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          // Non-async: do NOT await Navigator.push inside a Firebase callback.
+          // Awaiting navigation kept Firebase's Swift async Task alive until the
+          // OTP screen was popped, causing _assertionFailure in libswift_Concurrency.
+          if (!mounted) return;
+          setState(() { _isLoading = false; });
+          Navigator.of(context).push(
             MaterialPageRoute<void>(
               settings: RouteSettings(
                 arguments: <String, dynamic>{
@@ -381,13 +357,8 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         },
         codeAutoRetrievalTimeout: (String verificationId) {
-          if (!mounted) {
-            return;
-          }
-
-          setState(() {
-            _isLoading = false;
-          });
+          if (!mounted) return;
+          setState(() { _isLoading = false; });
         },
       );
     } on FirebaseAuthException catch (e) {
