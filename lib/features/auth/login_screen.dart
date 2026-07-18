@@ -1,5 +1,5 @@
 import 'dart:async';
-
+// Build 20: non-async Firebase callbacks to fix libswift_Concurrency crash
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
