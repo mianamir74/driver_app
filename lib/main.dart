@@ -13,6 +13,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 // firebase_app_check removed — DeviceCheck not configured in Firebase
 import 'features/auth/business_referral_code_screen.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/signup_screen.dart';
 import 'features/auth/referral_code_screen.dart';
 import 'features/auth/services/business_profile_service.dart';
 import 'features/auth/services/driver_profile_service.dart';

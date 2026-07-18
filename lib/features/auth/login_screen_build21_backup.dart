@@ -38,8 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isReturningUser = false;
   bool _obscurePassword = true;
 
-  final _authService = AuthService();
-
   // Simple country picker state
   String _selectedDialCode = '+44';
   String _selectedFlag = '🇬🇧';
@@ -294,50 +292,103 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleContinue() async {
-    if (_isLoading) return;
+    if (_isLoading) {
+      return;
+    }
 
     final FormState? form = _formKey.currentState;
-    if (form == null || !form.validate()) return;
+    if (form == null || !form.validate()) {
+      return;
+    }
 
     FocusScope.of(context).unfocus();
 
     final String localMobile = _mobileController.text.trim();
     final String e164PhoneNumber = _toE164UkNumber(localMobile);
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+    });
 
-    await _authService.sendOtp(
-      phoneNumber: e164PhoneNumber,
-      onCodeSent: (String verificationId, int? resendToken) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            settings: RouteSettings(
-              arguments: <String, dynamic>{
-                'accountType': _selectedAccountType,
-              },
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: e164PhoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) {
+          // Non-async: fire-and-forget signIn so Firebase's Swift Task
+          // is not held open by a Dart await.
+          FirebaseAuth.instance.signInWithCredential(credential).then((_) {
+            if (!mounted) return;
+            GoOutsSheet.success(context, title: 'Verified', message: 'Phone number verified successfully.');
+          }).catchError((Object e) {
+            if (!mounted) return;
+            if (e is FirebaseAuthException) {
+              _showErrorDialog('Verification Failed', _firebaseErrorMessage(e));
+            }
+          }).whenComplete(() {
+            if (!mounted) return;
+            setState(() { _isLoading = false; });
+          });
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          // Non-async: no await inside Firebase callback.
+          if (!mounted) return;
+          setState(() { _isLoading = false; });
+          _showErrorDialog('OTP Failed', _firebaseErrorMessage(e));
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          // Non-async: do NOT await Navigator.push inside a Firebase callback.
+          // Awaiting navigation kept Firebase's Swift async Task alive until the
+          // OTP screen was popped, causing _assertionFailure in libswift_Concurrency.
+          if (!mounted) return;
+          setState(() { _isLoading = false; });
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              settings: RouteSettings(
+                arguments: <String, dynamic>{
+                  'accountType': _selectedAccountType,
+                },
+              ),
+              builder: (_) => OtpVerificationScreen(
+                verificationId: verificationId,
+                phoneNumber: e164PhoneNumber,
+                localMobileNumber: localMobile,
+                resendToken: resendToken,
+              ),
             ),
-            builder: (_) => OtpVerificationScreen(
-              verificationId: verificationId,
-              phoneNumber: e164PhoneNumber,
-              localMobileNumber: localMobile,
-              resendToken: resendToken,
-            ),
-          ),
-        );
-      },
-      onAutoVerified: () {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        // auth state listener in initState handles home navigation
-      },
-      onError: (String message) {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        _showErrorDialog('OTP Failed', message);
-      },
-    );
+          );
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          if (!mounted) return;
+          setState(() { _isLoading = false; });
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      await _showErrorDialog(
+        'OTP Failed',
+        _firebaseErrorMessage(e),
+      );
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      await _showErrorDialog(
+        'Error',
+        'Failed to start phone verification.\n\n$e',
+      );
+    }
   }
 
   InputDecoration _inputDecoration(String label) {
