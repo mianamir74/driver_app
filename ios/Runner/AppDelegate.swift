@@ -9,16 +9,31 @@ import FirebaseAuth
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    // Do NOT call registerForRemoteNotifications() here.
-    // Without an APNs device token, Firebase Auth cannot use the APNs silent-push
-    // path and immediately falls back to reCAPTCHA — eliminating the 30-second
-    // native timeout that crashes libswift_Concurrency.dylib.
-    // This mirrors the behaviour of the consumer app (which uses a revoked APNs
-    // key to achieve the same immediate reCAPTCHA fallback).
+    // Register for remote notifications so Firebase Phone Auth can use APNs
+    application.registerForRemoteNotifications()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  // Kept for reCAPTCHA URL-scheme redirect (required for phone auth fallback flow).
+  // Forward APNs device token to Firebase Auth
+  override func application(_ application: UIApplication,
+                             didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+  }
+
+  // Forward silent push notifications to Firebase Auth (for phone verification)
+  override func application(_ application: UIApplication,
+                             didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                             fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    if Auth.auth().canHandleNotification(userInfo) {
+      completionHandler(.noData)
+      return
+    }
+    super.application(application, didReceiveRemoteNotification: userInfo,
+                      fetchCompletionHandler: completionHandler)
+  }
+
+  // Forward URL callbacks to Firebase Auth (for reCAPTCHA fallback)
   override func application(_ application: UIApplication,
                              open url: URL,
                              options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
