@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>289872853637-m4oifqpojhgc33vrnf94vte2o2mqujm9.apps.googleusercontent.com</string>
+	<string>289872853637-hsn5qkb1g7fehvdelmc1rh18c847fame.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.289872853637-m4oifqpojhgc33vrnf94vte2o2mqujm9</string>
+	<string>com.googleusercontent.apps.289872853637-hsn5qkb1g7fehvdelmc1rh18c847fame</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>289872853637-5ar6lqio8idck3u6ldllf9114jkf4bde.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.goouts.driverapp</string>
+	<string>com.goouts.lead</string>
 	<key>PROJECT_ID</key>
 	<string>goouts-f16db</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:289872853637:ios:33ec5443f74da8515bc7ec</string>
+	<string>1:289872853637:ios:99e308b8f7b7eca55bc7ec</string>
 	<key>DATABASE_URL</key>
 	<string>https://goouts-f16db-default-rtdb.europe-west1.firebasedatabase.app</string>
 </dict>
