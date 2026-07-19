@@ -13,7 +13,7 @@ workflows:
       groups:
         - appstore_credentials
       vars:
-        BUNDLE_ID: com.goouts.driverapp
+        BUNDLE_ID: com.goouts.lead
         APP_NAME: GoOuts Lead
 
     triggering:
