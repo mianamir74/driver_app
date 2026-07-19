@@ -478,7 +478,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -492,7 +492,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _goOutsBlue.withOpacity(0.10),
+              color: _goOutsBlue.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -552,7 +552,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
             border: Border.all(color: Colors.grey.shade200),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -661,7 +661,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -675,7 +675,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _goOutsBlue.withOpacity(0.10),
+              color: _goOutsBlue.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
@@ -765,7 +765,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -779,7 +779,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _goOutsBlue.withOpacity(0.10),
+              color: _goOutsBlue.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
@@ -1066,7 +1066,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -1129,7 +1129,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
                         border: Border.all(color: Colors.grey.shade200),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
+                            color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
@@ -1142,7 +1142,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: _goOutsBlue.withOpacity(0.10),
+                              color: _goOutsBlue.withValues(alpha: 0.10),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(Icons.location_city_rounded, color: _goOutsBlue, size: 18),
@@ -1316,7 +1316,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: <BoxShadow>[
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -1385,7 +1385,7 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
                               borderRadius: BorderRadius.circular(18),
                               boxShadow: <BoxShadow>[
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
+                                  color: Colors.black.withValues(alpha: 0.04),
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
                                 ),

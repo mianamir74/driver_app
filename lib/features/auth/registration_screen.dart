@@ -7,7 +7,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home/business_home_screen.dart';
 import '../home/driver_home_screen.dart';
@@ -53,8 +52,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   static const int _verificationSupportThreshold = 3;
   static const String _defaultDriverCountry = 'UNITED KINGDOM';
   static const String _northernIrelandCountry = 'NORTHERN IRELAND';
-  static const String _mapboxPublicToken =
-      'pk.eyJ1IjoibWlhbmFtaXI3NCIsImEiOiJjbW44aGp1bTYwYzVrMnBxcnRvYzA5bG40In0.2thWcmSMupWuGVNKJmfQyg';
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   /// Key used to scroll to the house-number field after postcode verification.
@@ -374,30 +371,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return null;
   }
 
-  Map<String, dynamic> _asMap(dynamic value) {
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) return Map<String, dynamic>.from(value);
-    return <String, dynamic>{};
-  }
-
-  String _readContextName(Map<String, dynamic> context, String key) {
-    final dynamic value = context[key];
-    if (value is Map) {
-      final Map<String, dynamic> valueMap = Map<String, dynamic>.from(value);
-      final String name = _readMapString(valueMap, 'name');
-      if (name.isNotEmpty) return name;
-    }
-    if (value is String) return value.trim();
-    return '';
-  }
-
-  String _firstNonEmpty(List<String> values) {
-    for (final String value in values) {
-      if (value.trim().isNotEmpty) return value.trim();
-    }
-    return '';
-  }
-
   String _normalizeForMatching(String value) {
     return value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   }
@@ -420,19 +393,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final String normalized = _normalizeUkPostcode(postcode).replaceAll(' ', '');
     if (normalized.startsWith('BT')) return _northernIrelandCountry;
     return _defaultDriverCountry;
-  }
-
-  String _extractCityFromPostcodeFeature(Map<String, dynamic> feature, List<String> cityOptions) {
-    final Map<String, dynamic> properties = _asMap(feature['properties']);
-    final Map<String, dynamic> context = _asMap(properties['context']);
-    final String candidate = _firstNonEmpty([
-      _readContextName(context, 'place'),
-      _readContextName(context, 'locality'),
-      _readContextName(context, 'district'),
-      _readMapString(properties, 'name'),
-    ]);
-    final String? matched = _matchCityOption(candidate, cityOptions);
-    return matched ?? '';
   }
 
   void _showSnackBarMessage(String message) {
@@ -2092,7 +2052,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: _goOutsBlue.withOpacity(0.12),
+                  color: _goOutsBlue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(Icons.groups_rounded, color: _goOutsBlue, size: 28),
@@ -2133,7 +2093,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           child: Column(
             children: [
               DropdownButtonFormField<String>(
-                value: _selectedPrefix,
+                initialValue: _selectedPrefix,
                 decoration: _inputDecoration('Prefix'),
                 items: AppLists.prefixOptions
                     .map((String value) => DropdownMenuItem<String>(
@@ -2346,7 +2306,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedCountry,
+                initialValue: _selectedCountry,
                 decoration: _inputDecoration('Country'),
                 items: AppLists.countryOptions
                     .map((String value) =>
@@ -2367,7 +2327,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedCity,
+                initialValue: _selectedCity,
                 decoration: _inputDecoration('City'),
                 items: _cityOptionsForSelectedCountry()
                     .map((String value) =>
@@ -2542,7 +2502,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: _goOutsBlue.withOpacity(0.12),
+                  color: _goOutsBlue.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(Icons.groups_rounded, color: _goOutsBlue, size: 28),
@@ -2689,7 +2649,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF22C55E).withOpacity(0.12),
+                    color: const Color(0xFF22C55E).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -2792,7 +2752,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
-                          color: selected ? color.withOpacity(0.10) : Colors.white,
+                          color: selected ? color.withValues(alpha: 0.10) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: selected ? color : const Color(0xFFD1D5DB),

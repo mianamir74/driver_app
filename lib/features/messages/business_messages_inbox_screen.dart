@@ -100,13 +100,6 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
             .set({'isArchived': true}, SetOptions(merge: true));
       }
 
-      Future<void> _unarchiveMessage(String uid, String msgId) async {
-        await FirebaseFirestore.instance
-            .collection('businesses').doc(uid)
-            .collection('messages').doc(msgId)
-            .set({'isArchived': false}, SetOptions(merge: true));
-      }
-
       Future<void> _deleteMessage(String uid, String msgId) async {
         await FirebaseFirestore.instance
             .collection('businesses').doc(uid)

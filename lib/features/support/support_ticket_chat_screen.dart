@@ -32,7 +32,6 @@ class _SupportTicketChatScreenState
     extends State<SupportTicketChatScreen> {
   // ── colours ──────────────────────────────────────────────────────────────────
   static const Color _blue    = Color(0xFF0392CA);
-  static const Color _bg      = Color(0xFFF2F3F7);
   static const Color _dark    = Color(0xFF1C1C1C);
 
   // ── controllers ──────────────────────────────────────────────────────────────
@@ -289,7 +288,7 @@ class _SupportTicketChatScreenState
               Container(
                 width: 64, height: 64,
                 decoration: BoxDecoration(
-                  color: _blue.withOpacity(0.10), shape: BoxShape.circle),
+                  color: _blue.withValues(alpha: 0.10), shape: BoxShape.circle),
                 child: const Icon(Icons.support_agent_rounded, size: 32, color: _blue)),
               const SizedBox(height: 14),
 
@@ -464,7 +463,7 @@ class _SupportTicketChatScreenState
             margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: _statusColor().withOpacity(0.12),
+              color: _statusColor().withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(_statusLabel(),
@@ -596,7 +595,7 @@ class _SupportTicketChatScreenState
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 4,
                     offset: const Offset(0, 2)),
                 ],

@@ -311,7 +311,7 @@ class _IntroSlidesScreenState extends State<IntroSlidesScreen> {
         count: _slides.length,
         effect: ExpandingDotsEffect(
           activeDotColor: _goOutsBlue,
-          dotColor: _goOutsBlue.withOpacity(0.18),
+          dotColor: _goOutsBlue.withValues(alpha: 0.18),
           dotHeight: 8,
           dotWidth: 8,
           expansionFactor: 3.2,

@@ -74,7 +74,7 @@ class VehicleInfoSection extends StatelessWidget {
         children: [
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: selectedVehicleType,
+            initialValue: selectedVehicleType,
             decoration: _buildSuccessDecoration(
               label: 'Vehicle Type',
               isSuccessful: _hasSelectedValue(selectedVehicleType),

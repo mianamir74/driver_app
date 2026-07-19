@@ -278,14 +278,14 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_navy, tierColor.withOpacity(0.85)],
+          colors: [_navy, tierColor.withValues(alpha: 0.85)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: _navy.withOpacity(0.25),
+            color: _navy.withValues(alpha: 0.25),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -300,7 +300,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -378,7 +378,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white.withOpacity(0.2),
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
                 valueColor:
                     const AlwaysStoppedAnimation<Color>(Colors.white),
                 minHeight: 6,
@@ -388,7 +388,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Row(
@@ -466,7 +466,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -526,12 +526,12 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
                       horizontal: 8, vertical: 12),
                   decoration: BoxDecoration(
                     color: isCurrent
-                        ? color.withOpacity(0.1)
+                        ? color.withValues(alpha: 0.1)
                         : const Color(0xFFF9FAFB),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isCurrent
-                          ? color.withOpacity(0.4)
+                          ? color.withValues(alpha: 0.4)
                           : _border,
                       width: isCurrent ? 1.5 : 1,
                     ),
@@ -561,7 +561,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
                         style: TextStyle(
                           fontSize: 10,
                           color: isCurrent
-                              ? color.withOpacity(0.7)
+                              ? color.withValues(alpha: 0.7)
                               : _textSecondary,
                         ),
                       ),
@@ -627,7 +627,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: _blue.withOpacity(0.08),
+              color: _blue.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.person_rounded, color: _blue, size: 22),
@@ -653,7 +653,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -728,7 +728,7 @@ class _DriverEarningsScreenState extends State<DriverEarningsScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: _blue.withOpacity(0.08),
+              color: _blue.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.people_outline, color: _blue, size: 30),

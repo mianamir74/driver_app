@@ -63,8 +63,8 @@ class _MyTicketsButtonState extends State<MyTicketsButton> {
     if (uid.isEmpty) return const SizedBox.shrink();
 
     final bool inv = widget.invertColors;
-    final Color pillBg      = inv ? Colors.white.withOpacity(0.18) : _blue.withOpacity(0.09);
-    final Color pillBorder  = inv ? Colors.white.withOpacity(0.40) : _blue.withOpacity(0.25);
+    final Color pillBg      = inv ? Colors.white.withValues(alpha: 0.18) : _blue.withValues(alpha: 0.09);
+    final Color pillBorder  = inv ? Colors.white.withValues(alpha: 0.40) : _blue.withValues(alpha: 0.25);
     final Color iconColor   = inv ? Colors.white                    : _blue;
     final Color textColor   = inv ? Colors.white                    : _blue;
 

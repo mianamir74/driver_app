@@ -89,7 +89,7 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white.withOpacity(0.55),
+                  color: Colors.white.withValues(alpha: 0.55),
                   letterSpacing: 3,
                 ),
               ),
@@ -107,7 +107,7 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white
-                              .withOpacity((_pulseOpacity.value * 0.06).clamp(0, 1)),
+                              .withValues(alpha: (_pulseOpacity.value * 0.06).clamp(0, 1)),
                         ),
                       ),
                     ),
@@ -119,7 +119,7 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.white
-                              .withOpacity((_pulseOpacity.value * 0.12).clamp(0, 1)),
+                              .withValues(alpha: (_pulseOpacity.value * 0.12).clamp(0, 1)),
                         ),
                       ),
                     ),
@@ -128,9 +128,9 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                       height: 62,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.35),
+                          color: Colors.white.withValues(alpha: 0.35),
                           width: 1.5,
                         ),
                       ),
@@ -159,7 +159,7 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.55),
+                  color: Colors.white.withValues(alpha: 0.55),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -183,7 +183,7 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white
-                                .withOpacity(opacity.clamp(0.25, 1.0)),
+                                .withValues(alpha: opacity.clamp(0.25, 1.0)),
                           ),
                         ),
                       ),
@@ -198,7 +198,7 @@ class _GoOutsLoadingOverlayState extends State<GoOutsLoadingOverlay>
                   'Secured by GoOuts',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.35),
+                    color: Colors.white.withValues(alpha: 0.35),
                     letterSpacing: 0.5,
                   ),
                 ),

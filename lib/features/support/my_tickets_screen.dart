@@ -82,7 +82,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: sel ? _blue : _border),
           boxShadow: sel
-              ? [BoxShadow(color: _blue.withOpacity(0.18), blurRadius: 8, offset: const Offset(0, 3))]
+              ? [BoxShadow(color: _blue.withValues(alpha: 0.18), blurRadius: 8, offset: const Offset(0, 3))]
               : [],
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -142,7 +142,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: hasNewReply
-                ? _blue.withOpacity(0.45)
+                ? _blue.withValues(alpha: 0.45)
                 : isOpen
                     ? _border
                     : const Color(0xFFE2E8F0),
@@ -151,8 +151,8 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
           boxShadow: [
             BoxShadow(
               color: hasNewReply
-                  ? _blue.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.03),
+                  ? _blue.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -188,9 +188,9 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                 clipBehavior: Clip.antiAlias,
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.10),
+                  color: statusColor.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor.withOpacity(0.25)),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.25)),
                 ),
                 child: Text(
                   _statusLabel(status),
@@ -430,7 +430,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
         clipBehavior: Clip.antiAlias,
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(children: [
@@ -453,7 +453,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
           Container(
             width: 70, height: 70,
             decoration: BoxDecoration(
-              color: _blue.withOpacity(0.08),
+              color: _blue.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.support_agent_rounded, size: 34, color: Color(0xFF0392CA)),

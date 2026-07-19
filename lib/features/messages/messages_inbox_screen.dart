@@ -536,7 +536,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -615,7 +615,7 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
               width: 72,
               height: 72,
               decoration: BoxDecoration(
-                color: _goOutsBlue.withOpacity(0.1),
+                color: _goOutsBlue.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -664,18 +664,6 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
         .set({'isArchived': true}, SetOptions(merge: true));
   }
 
-  Future<void> _unarchiveMessage({
-    required String collection,
-    required String userId,
-    required String messageId,
-  }) async {
-    await FirebaseFirestore.instance
-        .collection(collection)
-        .doc(userId)
-        .collection('messages')
-        .doc(messageId)
-        .set({'isArchived': false}, SetOptions(merge: true));
-  }
 
   Future<void> _deleteMessage({
     required String collection,
@@ -824,11 +812,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: message.isRead ? Colors.transparent : _goOutsBlue.withOpacity(0.35),
+            color: message.isRead ? Colors.transparent : _goOutsBlue.withValues(alpha: 0.35),
           ),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),

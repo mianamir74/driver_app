@@ -282,10 +282,10 @@ class _ReferralCodeScreenState extends State<ReferralCodeScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _goOutsBlue.withOpacity(0.08),
+        color: _goOutsBlue.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: _goOutsBlue.withOpacity(0.16),
+          color: _goOutsBlue.withValues(alpha: 0.16),
         ),
       ),
       child: Row(

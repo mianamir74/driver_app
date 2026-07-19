@@ -711,7 +711,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: _goOutsBlue.withOpacity(0.12),
+                    color: _goOutsBlue.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Icon(
@@ -1149,7 +1149,7 @@ class _InviteDriverSheetState extends State<_InviteDriverSheet> {
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: _blue.withOpacity(0.10),
+                        color: _blue.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(Icons.person_add_alt_1_rounded,

@@ -7,7 +7,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../home/business_home_screen.dart';
 import '../legal/terms_and_conditions_screen.dart';
@@ -36,8 +35,6 @@ class _BusinessRegistrationScreenState
   static const String _defaultBusinessReferralCode = 'GB000001';
   static const String _defaultCountry = 'UNITED KINGDOM';
   static const String _northernIrelandCountry = 'NORTHERN IRELAND';
-  static const String _mapboxPublicToken =
-      'pk.eyJ1IjoibWlhbmFtaXI3NCIsImEiOiJjbW44aGp1bTYwYzVrMnBxcnRvYzA5bG40In0.2thWcmSMupWuGVNKJmfQyg';
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AddressLookupService _addressService = AddressLookupService();
@@ -225,48 +222,6 @@ class _BusinessRegistrationScreenState
     return _defaultCountry;
   }
 
-  Map<String, dynamic> _asMap(dynamic value) {
-    if (value is Map<String, dynamic>) {
-      return value;
-    }
-    if (value is Map) {
-      return Map<String, dynamic>.from(value);
-    }
-    return <String, dynamic>{};
-  }
-
-  String _readMapString(Map<String, dynamic> map, String key) {
-    final dynamic value = map[key];
-    if (value == null) {
-      return '';
-    }
-    return value.toString().trim();
-  }
-
-  String _readContextName(Map<String, dynamic> context, String key) {
-    final dynamic value = context[key];
-    if (value is Map) {
-      final Map<String, dynamic> valueMap = Map<String, dynamic>.from(value);
-      final String name = _readMapString(valueMap, 'name');
-      if (name.isNotEmpty) {
-        return name;
-      }
-    }
-    if (value is String) {
-      return value.trim();
-    }
-    return '';
-  }
-
-  String _firstNonEmpty(List<String> values) {
-    for (final String value in values) {
-      if (value.trim().isNotEmpty) {
-        return value.trim();
-      }
-    }
-    return '';
-  }
-
   String _normalizeForMatching(String value) {
     return value.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
   }
@@ -285,24 +240,6 @@ class _BusinessRegistrationScreenState
       }
     }
     return null;
-  }
-
-  String _extractCityFromPostcodeFeature(
-    Map<String, dynamic> feature,
-    List<String> cityOptions,
-  ) {
-    final Map<String, dynamic> properties = _asMap(feature['properties']);
-    final Map<String, dynamic> context = _asMap(properties['context']);
-
-    final String candidate = _firstNonEmpty(<String>[
-      _readContextName(context, 'place'),
-      _readContextName(context, 'locality'),
-      _readContextName(context, 'district'),
-      _readMapString(properties, 'name'),
-    ]);
-
-    final String? matched = _matchCityOption(candidate, cityOptions);
-    return matched ?? '';
   }
 
   void _showSnackBarMessage(String message) {
@@ -901,19 +838,6 @@ class _BusinessRegistrationScreenState
     return null;
   }
 
-  String? _companyNumberValidator(String? value) {
-    final String input = value?.trim().toUpperCase() ?? '';
-    if (input.isEmpty) return 'Company Registration No is required';
-    final RegExp companyNumberRegex = RegExp(
-      r'^(?:\d{8}|SC\d{6}|NI\d{6})$',
-      caseSensitive: false,
-    );
-    if (!companyNumberRegex.hasMatch(input)) {
-      return 'Enter a valid UK company number';
-    }
-    return null;
-  }
-
   String? _emailValidator(String? value) {
     final String email = value?.trim() ?? '';
     if (email.isEmpty) {
@@ -1027,7 +951,7 @@ class _BusinessRegistrationScreenState
                 subtitle: 'Complete your business registration details below.',
                 children: <Widget>[
                   DropdownButtonFormField<String>(
-                    value: _selectedPrefix,
+                    initialValue: _selectedPrefix,
                     decoration: _completedInputDecoration(
                       label: 'Prefix',
                       complete: _isPrefixComplete,
@@ -1315,10 +1239,10 @@ class _BusinessRegistrationScreenState
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Color(0xFF0392CA).withOpacity(0.2)),
+                        border: Border.all(color: Color(0xFF0392CA).withValues(alpha: 0.2)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
+                            color: Colors.black.withValues(alpha: 0.06),
                             blurRadius: 8,
                             offset: Offset(0, 3),
                           ),
@@ -1504,7 +1428,7 @@ class _BusinessRegistrationScreenState
 
                   // ── City ──────────────────────────────────────────────
                   DropdownButtonFormField<String>(
-                    value: cityOptions.contains(_selectedCity) ? _selectedCity : null,
+                    initialValue: cityOptions.contains(_selectedCity) ? _selectedCity : null,
                     decoration: _completedInputDecoration(
                       label: 'City',
                       complete: _isCityComplete,
@@ -1529,7 +1453,7 @@ class _BusinessRegistrationScreenState
 
                   // ── Country ───────────────────────────────────────────
                   DropdownButtonFormField<String>(
-                    value: _selectedCountry,
+                    initialValue: _selectedCountry,
                     decoration: _completedInputDecoration(
                       label: 'Country',
                       complete: _isCountryComplete,

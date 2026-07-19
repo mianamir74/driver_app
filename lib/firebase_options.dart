@@ -49,22 +49,22 @@ class DefaultFirebaseOptions {
     storageBucket: 'goouts-f16db.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
+    static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD0u_n7kV2uPuSKFjaqYOyEiioDR5Y5d9o',
-    appId: '1:289872853637:ios:33ec5443f74da8515bc7ec',
+    appId: '1:289872853637:ios:99e308b8f7b7eca55bc7ec',
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     storageBucket: 'goouts-f16db.firebasestorage.app',
-    iosBundleId: 'com.goouts.driverapp',
+    iosBundleId: 'com.goouts.lead',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
+    static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD0u_n7kV2uPuSKFjaqYOyEiioDR5Y5d9o',
-    appId: '1:289872853637:ios:33ec5443f74da8515bc7ec',
+    appId: '1:289872853637:ios:99e308b8f7b7eca55bc7ec',
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     storageBucket: 'goouts-f16db.firebasestorage.app',
-    iosBundleId: 'com.goouts.driverapp',
+    iosBundleId: 'com.goouts.lead',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

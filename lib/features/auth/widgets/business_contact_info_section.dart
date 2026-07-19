@@ -240,7 +240,7 @@ class BusinessContactInfoSection extends StatelessWidget {
           // ── Country dropdown (always editable) ────────────────────────
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: selectedCountry,
+            initialValue: selectedCountry,
             decoration: _withTick(
               label: 'Country',
               showTick: _hasSelectedValue(selectedCountry),
@@ -261,7 +261,7 @@ class BusinessContactInfoSection extends StatelessWidget {
           // ── City dropdown (locked when verified) ──────────────────────
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: cityOptions.contains(selectedCity) ? selectedCity : null,
+            initialValue: cityOptions.contains(selectedCity) ? selectedCity : null,
             decoration: _withTick(
               label: 'City',
               showTick: _hasSelectedValue(selectedCity),

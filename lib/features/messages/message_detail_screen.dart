@@ -270,7 +270,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -381,7 +381,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
             borderRadius: BorderRadius.circular(18),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -397,7 +397,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: _goOutsBlue.withOpacity(0.10),
+                      color: _goOutsBlue.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
@@ -496,7 +496,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -510,7 +510,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: _goOutsBlue.withOpacity(0.10),
+                      color: _goOutsBlue.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(
@@ -569,7 +569,7 @@ class _MessageDetailScreenState extends State<MessageDetailScreen> {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),

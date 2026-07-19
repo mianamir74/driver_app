@@ -10,11 +10,8 @@ import 'services/auth_service.dart';
 import '../home/business_home_screen.dart';
 import '../home/driver_home_screen.dart';
 import 'otp_verification_screen.dart';
-import 'referral_code_screen.dart';
-import 'business_referral_code_screen.dart';
 import 'widgets/pre_auth_support_sheet.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:driver_app/features/common/goouts_sheet.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -151,23 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     return cleaned;
-  }
-
-  String _firebaseErrorMessage(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'invalid-phone-number':
-        return 'The mobile number format is invalid.';
-      case 'too-many-requests':
-        return 'Too many requests. Please try again later.';
-      case 'quota-exceeded':
-        return 'SMS quota exceeded for this project. Please try again later.';
-      case 'captcha-check-failed':
-        return 'App verification failed. Please try again.';
-      case 'app-not-authorized':
-        return 'This app is not authorized to use Firebase Authentication.';
-      default:
-        return e.message ?? 'Something went wrong. Please try again.';
-    }
   }
 
   Future<void> _showErrorDialog(String title, String message) async {

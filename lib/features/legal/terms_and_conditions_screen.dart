@@ -112,7 +112,6 @@ class _NoticePoint extends StatelessWidget {
 class TermsAndConditionsScreen extends StatelessWidget {
   const TermsAndConditionsScreen({super.key});
 
-  static const Color _goOutsBlue = Color(0xFF0392CA);
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +144,8 @@ class TermsAndConditionsScreen extends StatelessWidget {
 
 class _TermsContent extends StatelessWidget {
   const _TermsContent();
+
+  static const Color _goOutsBlue = Color(0xFF0392CA);
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +397,6 @@ class _TermsContent extends StatelessWidget {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  static const Color _goOutsBlue = Color(0xFF0392CA);
 
   Widget _importantNotice() {
     return Container(

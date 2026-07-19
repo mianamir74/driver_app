@@ -11,7 +11,6 @@ import '../profile/business_profile_screen.dart';
 import '../legal/faq_screen.dart';
 import '../referral/business_referral_link_screen.dart';
 import '../referral/business_referral_list_screen.dart';
-import '../referral/referral_dev_tester_screen.dart';
 import '../support/help_support_screen.dart';
 import '../../main.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -151,10 +150,6 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
       ),
       (Route<dynamic> route) => false,
     );
-  }
-
-  void _showComingSoon(String title) {
-    GoOutsSheet.info(context, title: 'Coming Soon', message: '$title will be connected next.');
   }
 
   void _openMenu(BuildContext context) {
@@ -432,9 +427,9 @@ Widget _menuTile({
       clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,10 +525,10 @@ Widget _menuTile({
                 clipBehavior: Clip.antiAlias,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.22),
+                  color: Colors.white.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.55),
+                    color: Colors.white.withValues(alpha: 0.55),
                     width: 1.2,
                   ),
                 ),
@@ -581,9 +576,9 @@ Widget _menuTile({
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withOpacity(0.10)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
             child: Row(
               children: [

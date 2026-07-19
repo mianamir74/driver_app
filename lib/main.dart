@@ -13,7 +13,6 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 // firebase_app_check removed — DeviceCheck not configured in Firebase
 import 'features/auth/business_referral_code_screen.dart';
 import 'features/auth/login_screen.dart';
-import 'features/auth/signup_screen.dart';
 import 'features/auth/referral_code_screen.dart';
 import 'features/auth/services/business_profile_service.dart';
 import 'features/auth/services/driver_profile_service.dart';
@@ -705,7 +704,7 @@ class _RoleCardButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: backgroundColor.withOpacity(0.16),
+                color: backgroundColor.withValues(alpha: 0.16),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
@@ -722,7 +721,7 @@ class _RoleCardButton extends StatelessWidget {
                   width: 58,
                   height: 58,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.16),
+                    color: Colors.white.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Padding(
@@ -755,7 +754,7 @@ class _RoleCardButton extends StatelessWidget {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.10),
+                          color: Colors.black.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
@@ -1027,7 +1026,7 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
         count: _slides.length,
         effect: ExpandingDotsEffect(
           activeDotColor: _goOutsBlue,
-          dotColor: _goOutsBlue.withOpacity(0.18),
+          dotColor: _goOutsBlue.withValues(alpha: 0.18),
           dotHeight: 8,
           dotWidth: 8,
           expansionFactor: 3.2,
@@ -1245,7 +1244,6 @@ class DriverSplashScreen extends StatefulWidget {
 
 class _DriverSplashScreenState extends State<DriverSplashScreen>
     with TickerProviderStateMixin {
-  static const Color _blue = Color(0xFF0392CA);
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
@@ -1350,15 +1348,15 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 18, vertical: 22),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.12),
+                              color: Colors.white.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(28),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.22),
+                                color: Colors.white.withValues(alpha: 0.22),
                                 width: 1.2,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.08),
+                                  color: Colors.black.withValues(alpha: 0.08),
                                   blurRadius: 24,
                                   offset: const Offset(0, 8),
                                 ),
@@ -1395,7 +1393,7 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white.withOpacity(0.95),
+                                    color: Colors.white.withValues(alpha: 0.95),
                                     height: 1.55,
                                   ),
                                 ),
@@ -1424,7 +1422,7 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white.withOpacity(0.80),
+                      color: Colors.white.withValues(alpha: 0.80),
                       letterSpacing: 1.8,
                     ),
                   ),
@@ -1460,9 +1458,9 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
                         ),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                              color: Colors.white.withOpacity(0.55),
+                              color: Colors.white.withValues(alpha: 0.55),
                               width: 1.5),
-                          backgroundColor: Colors.white.withOpacity(0.08),
+                          backgroundColor: Colors.white.withValues(alpha: 0.08),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
@@ -1478,7 +1476,7 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
                         text: 'Already registered? ',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.withValues(alpha: 0.75),
                         ),
                         children: const [
                           TextSpan(
@@ -1510,7 +1508,7 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
         width: active ? 14 : 8,
         height: 8,
         decoration: BoxDecoration(
-          color: active ? Colors.white : Colors.white.withOpacity(0.35),
+          color: active ? Colors.white : Colors.white.withValues(alpha: 0.35),
           borderRadius: BorderRadius.circular(4),
         ),
       );
@@ -1519,7 +1517,7 @@ class _DriverSplashScreenState extends State<DriverSplashScreen>
         width: 4,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withValues(alpha: 0.25),
           borderRadius: BorderRadius.circular(2),
         ),
       );
@@ -1543,7 +1541,7 @@ class _SplashStreaksPainter extends CustomPainter {
         ..moveTo(w * b[0], h * b[1])
         ..quadraticBezierTo(w * b[4], h * b[5], w * b[2], h * b[3]);
       bandPaint
-        ..color = Colors.white.withOpacity(b[7])
+        ..color = Colors.white.withValues(alpha: b[7])
         ..strokeWidth = b[6];
       canvas.drawPath(path, bandPaint);
     }
@@ -1563,7 +1561,7 @@ class _SplashStreaksPainter extends CustomPainter {
       [0.78, 0.92, 10.0, 0.08], [0.35, 0.95, 16.0, 0.07],
     ];
     for (final b in bubbles) {
-      bubblePaint.color = Colors.white.withOpacity(b[3]);
+      bubblePaint.color = Colors.white.withValues(alpha: b[3]);
       canvas.drawCircle(Offset(w * b[0], h * b[1]), b[2], bubblePaint);
     }
   }

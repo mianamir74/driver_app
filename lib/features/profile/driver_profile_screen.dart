@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import '../legal/terms_and_conditions_screen.dart';
 
@@ -489,7 +488,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -503,7 +502,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: _goOutsBlue.withOpacity(0.1),
+              color: _goOutsBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: _goOutsBlue),
@@ -553,10 +552,10 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: accentColor.withOpacity(0.25)),
+        border: Border.all(color: accentColor.withValues(alpha: 0.25)),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -570,7 +569,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.12),
+              color: accentColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
@@ -719,7 +718,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
@@ -729,7 +728,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                         children: <Widget>[
                           CircleAvatar(
                             radius: 42,
-                            backgroundColor: _goOutsBlue.withOpacity(0.12),
+                            backgroundColor: _goOutsBlue.withValues(alpha: 0.12),
                             backgroundImage: photoUrl.trim().isNotEmpty ? NetworkImage(photoUrl) : null,
                             child: photoUrl.trim().isEmpty
                                 ? Icon(
@@ -839,7 +838,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: <BoxShadow>[
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
+                            color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),

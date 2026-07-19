@@ -33,4 +33,15 @@ class AuthService {
     }
   }
 
-  Future<void> verifyOtp(
+  Future<void> verifyOtp({
+    required String verificationId,
+    required String smsCode,
+  }) async {
+    final credential = PhoneAuthProvider.credential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
+
+    await _auth.signInWithCredential(credential);
+  }
+}

@@ -209,7 +209,7 @@ class _GoOutsSheetContent extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 40,
             offset: const Offset(0, -8),
           ),
@@ -226,7 +226,7 @@ class _GoOutsSheetContent extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 stops: const [0.0, 1.0],
                 colors: [
-                  _color.withOpacity(0.07),
+                  _color.withValues(alpha: 0.07),
                   Colors.white,
                 ],
               ),
@@ -258,7 +258,7 @@ class _GoOutsSheetContent extends StatelessWidget {
                       width: 96,
                       height: 96,
                       decoration: BoxDecoration(
-                        color: _color.withOpacity(0.08),
+                        color: _color.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -267,7 +267,7 @@ class _GoOutsSheetContent extends StatelessWidget {
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        color: _color.withOpacity(0.14),
+                        color: _color.withValues(alpha: 0.14),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -280,7 +280,7 @@ class _GoOutsSheetContent extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _color.withOpacity(0.40),
+                            color: _color.withValues(alpha: 0.40),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -429,7 +429,7 @@ class _GoOutsConfirmSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.10),
+                  color: Colors.black.withValues(alpha: 0.10),
                   blurRadius: 30,
                   offset: const Offset(0, 6),
                 ),
@@ -446,7 +446,7 @@ class _GoOutsConfirmSheet extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        _red.withOpacity(0.06),
+                        _red.withValues(alpha: 0.06),
                         Colors.white,
                       ],
                     ),
@@ -463,7 +463,7 @@ class _GoOutsConfirmSheet extends StatelessWidget {
                             width: 80,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: _red.withOpacity(0.07),
+                              color: _red.withValues(alpha: 0.07),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -471,7 +471,7 @@ class _GoOutsConfirmSheet extends StatelessWidget {
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color: _red.withOpacity(0.13),
+                              color: _red.withValues(alpha: 0.13),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -483,7 +483,7 @@ class _GoOutsConfirmSheet extends StatelessWidget {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: _red.withOpacity(0.38),
+                                  color: _red.withValues(alpha: 0.38),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -558,7 +558,7 @@ class _GoOutsConfirmSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.07),
+                  color: Colors.black.withValues(alpha: 0.07),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),

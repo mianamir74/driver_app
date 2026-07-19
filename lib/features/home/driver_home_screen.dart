@@ -9,10 +9,8 @@ import '../auth/login_screen.dart';
 import '../legal/faq_screen.dart';
 import '../legal/terms_and_conditions_screen.dart';
 import '../merchant/driver_earnings_screen.dart';
-import '../merchant/merchant_onboarding_screen.dart';
 import '../messages/messages_inbox_screen.dart';
 import '../profile/driver_profile_screen.dart';
-import '../referral/referral_dev_tester_screen.dart';
 import '../referral/referral_link_screen.dart';
 import '../referral/referral_list_screen.dart';
 import '../support/help_support_screen.dart';
@@ -39,7 +37,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   int _unreadMessagesCount = 0;
   int _referralActivityCount = 0;
   int _totalReferralsCount = 0;
-  DateTime? _lastViewedAt;
   bool _hasLoadedDashboardStats = false;
 
   @override
@@ -166,7 +163,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       }
 
       setState(() {
-        _lastViewedAt = lastViewedAt;
         _unreadMessagesCount = _getUnreadMessagesCount(messagesSnapshot.docs);
         _totalReferralsCount = referralsSnapshot.docs.length;
         _referralActivityCount = _getReferralActivityCount(
@@ -266,10 +262,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     );
   }
 
-  void _showComingSoon(String title) {
-    GoOutsSheet.info(context, title: 'Coming Soon', message: '$title will be connected next.');
-  }
-
   void _openMenu({
     required BuildContext context,
     required _CurrentAccount account,
@@ -347,7 +339,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                );
               },
             ),
-
 
                 _menuTile(
                   icon: Icons.support_agent_outlined,
@@ -727,9 +718,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       clipBehavior: Clip.antiAlias,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.14),
+        color: Colors.white.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -781,14 +772,14 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
             color: badgeCount > 0
-                ? _goOutsBlue.withOpacity(0.40)
+                ? _goOutsBlue.withValues(alpha: 0.40)
                 : _softBorder,
             width: badgeCount > 0 ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
               color: badgeCount > 0
-                  ? _goOutsBlue.withOpacity(0.08)
+                  ? _goOutsBlue.withValues(alpha: 0.08)
                   : const Color(0x0A000000),
               blurRadius: 12,
               offset: const Offset(0, 6),
@@ -948,10 +939,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 clipBehavior: Clip.antiAlias,
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.22),
+                  color: Colors.white.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.55),
+                    color: Colors.white.withValues(alpha: 0.55),
                     width: 1.2,
                   ),
                 ),
@@ -999,9 +990,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
+              color: Colors.white.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withOpacity(0.10)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
             child: Row(
               children: [
@@ -1221,7 +1212,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                   'Recruit new drivers and grow your team',
                               iconColor: const Color(0xFF0392CA),
                               iconBgColor:
-                                  const Color(0xFF0392CA).withOpacity(0.1),
+                                  const Color(0xFF0392CA).withValues(alpha: 0.1),
                               onTap: () => _openScreen(
                                 context,
                                 const ReferralLinkScreen(),
@@ -1236,7 +1227,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                   'Track commission from drivers you referred',
                               iconColor: const Color(0xFFF59E0B),
                               iconBgColor:
-                                  const Color(0xFFF59E0B).withOpacity(0.1),
+                                  const Color(0xFFF59E0B).withValues(alpha: 0.1),
                               onTap: () => _openScreen(
                                 context,
                                 const DriverEarningsScreen(),

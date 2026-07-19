@@ -186,10 +186,10 @@ class ContactInfoSection extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _goOutsBlue.withOpacity(0.2)),
+                border: Border.all(color: _goOutsBlue.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -264,9 +264,9 @@ class ContactInfoSection extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: _goOutsBlue.withOpacity(0.07),
+                color: _goOutsBlue.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _goOutsBlue.withOpacity(0.25)),
+                border: Border.all(color: _goOutsBlue.withValues(alpha: 0.25)),
               ),
               child: const Row(
                 children: <Widget>[
@@ -292,9 +292,9 @@ class ContactInfoSection extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: _successGreen.withOpacity(0.07),
+                color: _successGreen.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _successGreen.withOpacity(0.3)),
+                border: Border.all(color: _successGreen.withValues(alpha: 0.3)),
               ),
               child: const Row(
                 children: <Widget>[
@@ -418,7 +418,7 @@ class ContactInfoSection extends StatelessWidget {
           // ── 5. City (auto-filled from postcode mapping) ──────────────
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: cityOptions.contains(selectedCity) ? selectedCity : null,
+            initialValue: cityOptions.contains(selectedCity) ? selectedCity : null,
             decoration: _withTick(
               label: 'City',
               showTick: _hasSelectedValue(selectedCity),
@@ -439,7 +439,7 @@ class ContactInfoSection extends StatelessWidget {
           // ── 6. Country (auto-filled from postcode prefix) ────────────
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: selectedCountry,
+            initialValue: selectedCountry,
             decoration: _withTick(
               label: 'Country',
               showTick: _hasSelectedValue(selectedCountry),

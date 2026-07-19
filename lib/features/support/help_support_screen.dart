@@ -196,13 +196,6 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return null;
   }
 
-  String? _emailValidator(String? value) {
-    final String email = value?.trim() ?? '';
-    if (email.isEmpty) return 'Email is required';
-    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) return 'Enter a valid email';
-    return null;
-  }
-
   // ── Category tile ─────────────────────────────────────────────────────────
   Widget _categoryTile(_Category cat) {
     final bool isSelected = _selectedCategory?.id == cat.id;
@@ -219,7 +212,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? _goOutsBlue.withOpacity(0.06) : Colors.white,
+          color: isSelected ? _goOutsBlue.withValues(alpha: 0.06) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? _goOutsBlue : _softBorder,
@@ -231,7 +224,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             clipBehavior: Clip.antiAlias,
             width: 38, height: 38,
             decoration: BoxDecoration(
-              color: isSelected ? _goOutsBlue.withOpacity(0.12) : const Color(0xFFF3F6FA),
+              color: isSelected ? _goOutsBlue.withValues(alpha: 0.12) : const Color(0xFFF3F6FA),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(cat.icon, size: 18,
@@ -273,7 +266,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          color: isSelected ? _goOutsBlue.withOpacity(0.06) : Colors.white,
+          color: isSelected ? _goOutsBlue.withValues(alpha: 0.06) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? _goOutsBlue : _softBorder,
@@ -732,9 +725,9 @@ class _MyTicketsButton extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0392CA).withOpacity(0.09),
+                  color: const Color(0xFF0392CA).withValues(alpha: 0.09),
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0xFF0392CA).withOpacity(0.25)),
+                  border: Border.all(color: const Color(0xFF0392CA).withValues(alpha: 0.25)),
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: const [
                   Icon(Icons.confirmation_number_rounded, size: 16, color: Color(0xFF0392CA)),

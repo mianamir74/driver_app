@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -70,7 +69,6 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
   ];
 
   File? _businessPhoto;
-  bool _uploadingPhoto = false;
   String? _photoUrl;
 
   bool _agreementAccepted = false;
@@ -136,7 +134,6 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
 
   Future<void> _uploadPhoto() async {
     if (_businessPhoto == null) return;
-    setState(() => _uploadingPhoto = true);
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid ?? 'unknown';
       final ts = DateTime.now().millisecondsSinceEpoch;
@@ -147,7 +144,6 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
     } catch (_) {
       _photoUrl = null;
     } finally {
-      if (mounted) setState(() => _uploadingPhoto = false);
     }
   }
 
@@ -284,7 +280,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
             Container(
               width: 72, height: 72,
               decoration: BoxDecoration(
-                  color: _green.withOpacity(0.12), shape: BoxShape.circle),
+                  color: _green.withValues(alpha: 0.12), shape: BoxShape.circle),
               child: const Icon(Icons.check_circle_rounded, color: _green, size: 40),
             ),
             const SizedBox(height: 20),
@@ -444,9 +440,9 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _blue.withOpacity(0.06),
+                color: _blue.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _blue.withOpacity(0.2)),
+                border: Border.all(color: _blue.withValues(alpha: 0.2)),
               ),
               child: const Row(
                 children: [
@@ -508,7 +504,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _textPrimary))),
                       Switch(value: _acceptsDelivery,
                           onChanged: (v) => setState(() => _acceptsDelivery = v),
-                          activeColor: _blue),
+                          activeThumbColor: _blue),
                     ]),
                     if (_acceptsDelivery) ...[
                       const SizedBox(height: 20),
@@ -632,7 +628,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
                           duration: const Duration(milliseconds: 150),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: selected ? color.withOpacity(0.12) : Colors.white,
+                            color: selected ? color.withValues(alpha: 0.12) : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: selected ? color : _border,
@@ -683,7 +679,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.07) : Colors.white,
+          color: selected ? color.withValues(alpha: 0.07) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: selected ? color : _border, width: selected ? 2 : 1),
         ),
@@ -691,7 +687,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
           children: [
             Container(
               width: 38, height: 38,
-              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
               child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(width: 12),
@@ -711,7 +707,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: selected ? color : color.withOpacity(0.1),
+                    color: selected ? color : color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(badge, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800,
@@ -752,9 +748,9 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: cardColor.withOpacity(0.06),
+        color: cardColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: cardColor.withOpacity(0.25)),
+        border: Border.all(color: cardColor.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,7 +771,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.7), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(8)),
               child: Row(children: [
                 Icon(Icons.info_outline_rounded, size: 14, color: cardColor),
                 const SizedBox(width: 6),
@@ -789,7 +785,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
           const SizedBox(height: 4),
           Text(
             '* All figures based on £${sampleOrder.toStringAsFixed(0)} food subtotal.',
-            style: TextStyle(fontSize: 10, color: cardColor.withOpacity(0.7), height: 1.4),
+            style: TextStyle(fontSize: 10, color: cardColor.withValues(alpha: 0.7), height: 1.4),
           ),
         ],
       ),
@@ -815,7 +811,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF7C3AED).withOpacity(0.1) : Colors.white,
+          color: selected ? const Color(0xFF7C3AED).withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
               color: selected ? const Color(0xFF7C3AED) : _border,
@@ -850,7 +846,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
                 ),
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Container(width: 64, height: 64,
-                      decoration: BoxDecoration(color: _amber.withOpacity(0.1), shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: _amber.withValues(alpha: 0.1), shape: BoxShape.circle),
                       child: const Icon(Icons.add_a_photo_rounded, color: _amber, size: 30)),
                   const SizedBox(height: 14),
                   const Text('Add business photo',
@@ -977,10 +973,10 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _agreementAccepted ? _green.withOpacity(0.06) : Colors.white,
+                color: _agreementAccepted ? _green.withValues(alpha: 0.06) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                    color: _agreementAccepted ? _green.withOpacity(0.4) : _border, width: 1.5),
+                    color: _agreementAccepted ? _green.withValues(alpha: 0.4) : _border, width: 1.5),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1070,7 +1066,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: isLast ? _green : _blue,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: _blue.withOpacity(0.4),
+                disabledBackgroundColor: _blue.withValues(alpha: 0.4),
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 0,
@@ -1093,7 +1089,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(width: 48, height: 48,
-            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
             child: Icon(icon, color: color, size: 24)),
         const SizedBox(width: 14),
         Expanded(child: Column(
@@ -1180,7 +1176,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
   Widget _dropdown({required String? value, required String hint, required List<String> items,
       required void Function(String?) onChanged, String? Function(String?)? validator}) {
     return DropdownButtonFormField<String>(
-      value: value, onChanged: onChanged, validator: validator, isExpanded: true,
+      initialValue: value, onChanged: onChanged, validator: validator, isExpanded: true,
       decoration: InputDecoration(
         hintText: hint, hintStyle: const TextStyle(color: Color(0xFFB0B8C1), fontSize: 14),
         filled: true, fillColor: Colors.white,

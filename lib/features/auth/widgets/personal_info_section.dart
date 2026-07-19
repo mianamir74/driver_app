@@ -115,7 +115,7 @@ class PersonalInfoSection extends StatelessWidget {
         children: [
           DropdownButtonFormField<String>(
             isExpanded: true,
-            value: selectedPrefix,
+            initialValue: selectedPrefix,
             decoration: _buildSuccessDecoration(
               label: 'Prefix',
               isSuccessful: _hasSelectedValue(selectedPrefix),
@@ -224,7 +224,7 @@ class PersonalInfoSection extends StatelessWidget {
               Expanded(
                 child: DropdownButtonFormField<String>(
                   isExpanded: true,
-                  value: selectedMonth,
+                  initialValue: selectedMonth,
                   decoration: _buildSuccessDecoration(
                     label: 'Birth Month',
                     isSuccessful: _hasSelectedValue(selectedMonth),
@@ -243,7 +243,7 @@ class PersonalInfoSection extends StatelessWidget {
               Expanded(
                 child: DropdownButtonFormField<int>(
                   isExpanded: true,
-                  value: selectedYear,
+                  initialValue: selectedYear,
                   decoration: _buildSuccessDecoration(
                     label: 'Birth Year',
                     isSuccessful: selectedYear != null,

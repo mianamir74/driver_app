@@ -322,7 +322,7 @@ class _ReferralListScreenState extends State<ReferralListScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -440,7 +440,7 @@ class _ReferralListScreenState extends State<ReferralListScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -555,7 +555,7 @@ class _ReferralListScreenState extends State<ReferralListScreen> {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: _goOutsBlue.withOpacity(0.1),
+                  color: _goOutsBlue.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -722,7 +722,7 @@ class _ReferralListScreenState extends State<ReferralListScreen> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
+                            color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 8,
                             offset: const Offset(0, 3),
                           ),
