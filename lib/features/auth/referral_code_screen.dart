@@ -333,10 +333,11 @@ class _ReferralCodeScreenState extends State<ReferralCodeScreen> {
       fit: BoxFit.contain,
       errorBuilder: (_, __, ___) {
         return Image.asset(
-          'assets/logo/goouts_logo_login.png',
+          'assets/logo/goouts_logo_white.png',
           height: 190,
           fit: BoxFit.contain,
           color: _goOutsBlue,
+          errorBuilder: (_, __, ___) => const SizedBox(height: 190),
         );
       },
     );

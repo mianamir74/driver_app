@@ -379,10 +379,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             children: [
               SizedBox(height: 12),
               Image.asset(
-                'assets/logo/goouts_logo_login.png',
+                'assets/logo/goouts_logo_white.png',
                 height: 160,
                 fit: BoxFit.contain,
                 color: _goOutsBlue,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.verified_user_rounded,
+                  size: 80,
+                  color: _goOutsBlue,
+                ),
               ),
               SizedBox(height: 24),
               AutoSizeText(
