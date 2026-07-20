@@ -981,7 +981,7 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
           children: [
             if (_showBackButton)
               TextButton.icon(
-                onPressed: _previousSlide,
+                onPressed: _handleBack,
                 icon: const Icon(Icons.arrow_back_ios_new, size: 16),
                 label: const Text(
                   'BACK',
@@ -1060,6 +1060,11 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
           path,
           fit: BoxFit.contain,
           filterQuality: FilterQuality.high,
+          errorBuilder: (_, __, ___) => const Icon(
+            Icons.image_not_supported_outlined,
+            size: 80,
+            color: Color(0xFF0392CA),
+          ),
         ),
       ),
     );
