@@ -608,10 +608,15 @@ class RoleSelectionScreen extends StatelessWidget {
                         const SizedBox(height: 32),
                         Center(
                           child: Image.asset(
-                            'assets/logo/goouts_logo_login.png',
+                            'assets/logo/goouts_logo_white.png',
                             height: 180,
                             fit: BoxFit.contain,
                             color: _goOutsBlue,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.local_shipping_rounded,
+                              size: 90,
+                              color: _goOutsBlue,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
