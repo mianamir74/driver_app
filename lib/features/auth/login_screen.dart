@@ -284,6 +284,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final String localMobile = _mobileController.text.trim();
     final String e164PhoneNumber = _toE164UkNumber(localMobile);
 
+    // Cancel auth subscription BEFORE any Firebase activity.
+    // It fires on sign-in for new users and calls popUntil(first), crashing
+    // the app back to splash. This covers both verificationCompleted (instant)
+    // and codeSent paths. OtpVerificationScreen handles all post-OTP navigation.
+    _authSubscription?.cancel();
+    _authSubscription = null;
+
     setState(() => _isLoading = true);
 
     await _authService.sendOtp(
@@ -291,13 +298,6 @@ class _LoginScreenState extends State<LoginScreen> {
       onCodeSent: (String verificationId, int? resendToken) {
         if (!mounted) return;
         setState(() => _isLoading = false);
-        // Cancel auth subscription before pushing OTP screen.
-        // For new users _navigateToHomeForExistingUser calls popUntil(first)
-        // which sends the user back to splash before OtpVerificationScreen can
-        // navigate to ReferralCodeScreen — causing the apparent crash.
-        // OtpVerificationScreen handles all post-OTP navigation itself.
-        _authSubscription?.cancel();
-        _authSubscription = null;
         Navigator.of(context).push(
           MaterialPageRoute<void>(
             settings: RouteSettings(
