@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home/business_home_screen.dart';
 import '../home/driver_home_screen.dart';
+import 'auth_flow_guard.dart';
 import 'referral_code_screen.dart';
 import 'business_referral_code_screen.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -40,6 +41,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool _isVerifying = false;
   bool _isResending = false;
   bool _hasReadRouteArgs = false;
+  bool _hasNavigated = false; // guard against double navigation (verificationCompleted + manual OTP race)
   String _accountType = 'driver';
 
   @override
@@ -147,6 +149,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   Future<void> _completeSuccessfulVerification() async {
+    // Guard against double navigation (verificationCompleted firing after codeSent on Android)
+    if (_hasNavigated) return;
+    _hasNavigated = true;
+
     await _savePendingAccountType();
 
     if (!mounted) return;
@@ -154,6 +160,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
+      // Sign-in completed but no user returned — release guard and pop to root
+      AuthFlowGuard.end();
+      if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
       return;
     }
@@ -173,6 +182,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final bool isDriver    = results[0].exists;
     final bool isCabDriver = results[1].exists;
     final bool isBusiness  = results[2].exists;
+
+    // Release guard just before navigation.
+    AuthFlowGuard.end();
 
     if (isBusiness) {
       Navigator.of(context).pushAndRemoveUntil(

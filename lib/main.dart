@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 // firebase_app_check removed — DeviceCheck not configured in Firebase
+import 'features/auth/auth_flow_guard.dart';
 import 'features/auth/business_referral_code_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/referral_code_screen.dart';
@@ -531,6 +532,14 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
         final User? user = authSnapshot.data;
 
         if (user == null) {
+          return const DriverSplashScreen();
+        }
+
+        // If the OTP login flow is in progress, hold on DriverSplashScreen.
+        // LoginScreen / OtpVerificationScreen are pushed on top via the Navigator
+        // so the user won't see this — it just prevents AuthProfileGate from
+        // mounting and racing with the auth flow's own navigation.
+        if (AuthFlowGuard.isActive) {
           return const DriverSplashScreen();
         }
 

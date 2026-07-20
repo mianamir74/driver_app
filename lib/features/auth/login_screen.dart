@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'auth_flow_guard.dart';
 import 'services/auth_service.dart';
 
 import '../home/business_home_screen.dart';
 import '../home/driver_home_screen.dart';
+import 'business_referral_code_screen.dart';
 import 'otp_verification_screen.dart';
+import 'referral_code_screen.dart';
 import 'widgets/pre_auth_support_sheet.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
@@ -131,19 +134,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   String _toE164UkNumber(String localNumber) {
-    final String cleaned = localNumber.replaceAll(RegExp(r'\s+'), '');
+    final String cleaned = localNumber.replaceAll(RegExp(r'[\s\-()]'), '');
 
-    // If UK selected and number is UK format, convert 07xxxxxxxxx to +44xxxxxxxxx
-    if (_selectedDialCode == '+44' &&
-        cleaned.startsWith('07') &&
-        cleaned.length == 11) {
-      return '+44${cleaned.substring(1)}';
+    // Already in E.164 — return as-is
+    if (cleaned.startsWith('+')) return cleaned;
+
+    // UK: 07xxxxxxxxx (11 digits) → +447xxxxxxxxx
+    if (_selectedDialCode == '+44') {
+      if (cleaned.startsWith('07') && cleaned.length == 11) {
+        return '+44${cleaned.substring(1)}';
+      }
+      // UK number without leading 0: 7xxxxxxxxx (10 digits)
+      if (cleaned.startsWith('7') && cleaned.length == 10) {
+        return '+44$cleaned';
+      }
     }
 
-    // For other codes, just prepend selected dial code to digits
-    if (_selectedDialCode.isNotEmpty && !cleaned.startsWith('+')) {
-      final String digitsOnly =
-          cleaned.replaceAll(RegExp(r'[^0-9]'), '');
+    // Other dial codes — strip non-digits then prepend dial code
+    if (_selectedDialCode.isNotEmpty) {
+      final String digitsOnly = cleaned.replaceAll(RegExp(r'[^0-9]'), '');
       return '$_selectedDialCode$digitsOnly';
     }
 
@@ -202,7 +211,21 @@ class _LoginScreenState extends State<LoginScreen> {
         (route) => false,
       );
     } else {
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // New user — no profile exists yet. Send to registration flow.
+      if (_selectedAccountType == 'business') {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+              builder: (_) => const BusinessReferralCodeScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+              builder: (_) =>
+                  ReferralCodeScreen(accountType: _selectedAccountType)),
+          (route) => false,
+        );
+      }
     }
   }
 
@@ -238,7 +261,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user != null) {
         await _navigateToHomeForExistingUser(user);
       } else {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // Credential returned no user — unexpected. Show error instead of
+        // crashing to splash.
+        if (!mounted) return;
+        await _showErrorDialog('Login Failed', 'Could not retrieve your account. Please try OTP login.');
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -273,6 +299,61 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  Future<void> _completeVerificationFlow() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pendingAccountTypeKey, _selectedAccountType);
+
+    if (!mounted) return;
+
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final List<DocumentSnapshot<Map<String, dynamic>>> results =
+        await Future.wait([
+      firestore.collection('drivers').doc(user.uid).get(),
+      firestore.collection('cab_drivers').doc(user.uid).get(),
+      firestore.collection('businesses').doc(user.uid).get(),
+    ]);
+
+    if (!mounted) return;
+
+    final bool isDriver    = results[0].exists;
+    final bool isCabDriver = results[1].exists;
+    final bool isBusiness  = results[2].exists;
+
+    // Release the guard just before navigation so AppLaunchCoordinator
+    // doesn't interfere while we pushAndRemoveUntil.
+    AuthFlowGuard.end();
+
+    if (isBusiness) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const BusinessHomeScreen()),
+        (route) => false,
+      );
+    } else if (isDriver || isCabDriver) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const DriverHomeScreen()),
+        (route) => false,
+      );
+    } else {
+      if (_selectedAccountType == 'business') {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const BusinessReferralCodeScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) =>
+                ReferralCodeScreen(accountType: _selectedAccountType),
+          ),
+          (route) => false,
+        );
+      }
+    }
+  }
+
   Future<void> _handleContinue() async {
     if (_isLoading) return;
 
@@ -284,12 +365,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final String localMobile = _mobileController.text.trim();
     final String e164PhoneNumber = _toE164UkNumber(localMobile);
 
-    // Cancel auth subscription BEFORE any Firebase activity.
-    // It fires on sign-in for new users and calls popUntil(first), crashing
-    // the app back to splash. This covers both verificationCompleted (instant)
-    // and codeSent paths. OtpVerificationScreen handles all post-OTP navigation.
+    // Cancel auth subscription and activate flow guard BEFORE any Firebase
+    // activity. The guard prevents AppLaunchCoordinator's StreamBuilder from
+    // swapping DriverSplashScreen → AuthProfileGate mid-flow.
     _authSubscription?.cancel();
     _authSubscription = null;
+    AuthFlowGuard.start();
 
     setState(() => _isLoading = true);
 
@@ -314,10 +395,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
-      onAutoVerified: () {
+      onAutoVerified: () async {
         if (!mounted) return;
         setState(() => _isLoading = false);
-        // auth state listener in initState handles home navigation
+        await _completeVerificationFlow();
       },
       onError: (String message) {
         if (!mounted) return;
