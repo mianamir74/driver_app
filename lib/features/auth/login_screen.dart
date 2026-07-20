@@ -291,6 +291,13 @@ class _LoginScreenState extends State<LoginScreen> {
       onCodeSent: (String verificationId, int? resendToken) {
         if (!mounted) return;
         setState(() => _isLoading = false);
+        // Cancel auth subscription before pushing OTP screen.
+        // For new users _navigateToHomeForExistingUser calls popUntil(first)
+        // which sends the user back to splash before OtpVerificationScreen can
+        // navigate to ReferralCodeScreen — causing the apparent crash.
+        // OtpVerificationScreen handles all post-OTP navigation itself.
+        _authSubscription?.cancel();
+        _authSubscription = null;
         Navigator.of(context).push(
           MaterialPageRoute<void>(
             settings: RouteSettings(
