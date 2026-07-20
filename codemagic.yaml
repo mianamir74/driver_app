@@ -5,45 +5,41 @@ workflows:
     instance_type: mac_mini_m1
 
     environment:
-      # ── Apple credentials ───────────────────────────────────────────────────
-      # Before your first build, go to Codemagic → Team Settings → Team
-      # Integrations → Developer Portal → Manage keys and add your App Store
-      # Connect API key (Issuer ID, Key ID, .p8 file).  That's all — the
-      # "auth: integration" line below picks it up automatically.
-      # ────────────────────────────────────────────────────────────────────────
       flutter: stable
       xcode: latest
+      # ios_signing tells Codemagic to use the connected Developer Portal
+      # integration ("Codemagic Admin" key) to fetch the correct distribution
+      # certificate + App Store provisioning profile automatically.
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.goouts.lead
 
     triggering:
       events:
         - push
-      branch_filters:
+      branch_patterns:
         - pattern: main
           include: true
+          source: true
 
     scripts:
-      # 1. Resolve provisioning profile using the App Store Connect API key
-      #    that was saved in Team Integrations.
-      - name: Set up code signing
-        script: |
-          xcode-project use-profiles
-
-      # 2. Fetch Dart/Flutter dependencies
+      # 1. Fetch Dart/Flutter dependencies
       - name: Get Flutter packages
         script: |
           flutter pub get
 
-      # 3. Bump the iOS build number.
+      # 2. Bump the iOS build number.
       #    We add 100 to Codemagic's internal counter so automatic builds
       #    never clash with manually pushed build numbers (1–99).
-      #    Codemagic run #1 → iOS build 101, run #2 → 102, etc.
       - name: Set iOS build number
         script: |
           BUILD_NUM=$((100 + $BUILD_NUMBER))
           echo "iOS build number → $BUILD_NUM"
           cd ios && agvtool new-version -all $BUILD_NUM
 
-      # 4. Compile the release IPA for App Store / TestFlight
+      # 3. Compile the release IPA for App Store / TestFlight.
+      #    ios_signing above has already installed the cert + profile and
+      #    written export_options.plist to $HOME.
       - name: Build iOS IPA
         script: |
           flutter build ipa \
@@ -52,13 +48,9 @@ workflows:
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log   # handy if the build fails
+      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
-        # Uses the API key configured in Team Integrations — no extra vars needed
         auth: integration
         submit_to_testflight: true
-        # Uncomment and set a group name to auto-add testers after processing:
-        # beta_testers:
-        #   - Internal Testers
