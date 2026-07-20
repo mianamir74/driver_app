@@ -43,3 +43,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Junk / local-only files — never commit these
+*.bat
+*.ps1
+*.py
+*.txt
+flutter_01.png
+flutter_02.png
+codemagic_backup.yaml
+yflutterfire/
+dart/
+cd..
+login_screen_build21_backup.dart
+help_support_screen.BACKUP.dart
+auto_size_migration_report.txt
+auto_size_text_migrator.py
+fix_errors.py
