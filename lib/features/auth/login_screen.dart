@@ -122,18 +122,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final String cleaned = value.trim().replaceAll(RegExp(r'\s+'), '');
 
-    if (cleaned.length != 11) {
-      return 'Mobile number must be 11 digits';
-    }
-
-    if (!RegExp(r'^07\d{9}$').hasMatch(cleaned)) {
-      return 'Enter a valid UK mobile number';
+    if (_selectedDialCode == '+44') {
+      if (!RegExp(r'^07\d{9}$').hasMatch(cleaned)) {
+        return 'Enter a valid UK mobile number (e.g. 07911123456)';
+      }
+    } else if (_selectedDialCode == '+353') {
+      if (!RegExp(r'^08\d{8}$').hasMatch(cleaned)) {
+        return 'Enter a valid Irish mobile number (e.g. 0851234567)';
+      }
+    } else {
+      if (cleaned.length < 7) {
+        return 'Enter a valid mobile number';
+      }
     }
 
     return null;
   }
 
-  String _toE164UkNumber(String localNumber) {
+  String _toE164Number(String localNumber) {
     final String cleaned = localNumber.replaceAll(RegExp(r'[\s\-()]'), '');
 
     // Already in E.164 — return as-is
@@ -148,6 +154,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (cleaned.startsWith('7') && cleaned.length == 10) {
         return '+44$cleaned';
       }
+    }
+
+    // Ireland: 08xxxxxxxxx (10 digits) → +3538xxxxxxxxx (drop leading 0)
+    if (_selectedDialCode == '+353') {
+      if (cleaned.startsWith('0') && cleaned.length >= 9) {
+        return '+353${cleaned.substring(1)}';
+      }
+      return '+353$cleaned';
     }
 
     // Other dial codes — strip non-digits then prepend dial code
@@ -238,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     final String localMobile = _mobileController.text.trim();
-    final String e164 = _toE164UkNumber(localMobile);
+    final String e164 = _toE164Number(localMobile);
     final String emailForAuth =
         '${e164.replaceAll('+', '').replaceAll(' ', '')}@goouts.app';
 
@@ -363,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     final String localMobile = _mobileController.text.trim();
-    final String e164PhoneNumber = _toE164UkNumber(localMobile);
+    final String e164PhoneNumber = _toE164Number(localMobile);
 
     // Cancel auth subscription and activate flow guard BEFORE any Firebase
     // activity. The guard prevents AppLaunchCoordinator's StreamBuilder from
@@ -613,13 +627,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                           FilteringTextInputFormatter
                                               .digitsOnly,
                                           LengthLimitingTextInputFormatter(
-                                            11,
+                                            _selectedDialCode == '+353' ? 10 : 11,
                                           ),
                                         ],
                                         decoration: _inputDecoration(
                                           'Mobile Number',
                                         ).copyWith(
-                                          hintText: '07123456780',
+                                          hintText: _selectedDialCode == '+353' ? '0851234567' : '07123456780',
                                           counterText: '',
                                         ),
                                         validator: _mobileValidator,
