@@ -70,6 +70,7 @@ class _SignupScreenState extends State<SignupScreen> {
       onCodeSent: (verificationId, resendToken) {
         if (!mounted) return;
         setState(() => _isLoading = false);
+        if (!context.mounted) return;
         Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => OtpVerificationScreen(
@@ -89,7 +90,7 @@ class _SignupScreenState extends State<SignupScreen> {
       onError: (message) {
         if (!mounted) return;
         setState(() => _isLoading = false);
-        GoOutsSheet.error(context, title: 'Sign Up Failed', message: message);
+        if (context.mounted) GoOutsSheet.error(context, title: 'Sign Up Failed', message: message);
       },
     );
   }

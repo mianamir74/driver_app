@@ -322,7 +322,7 @@ class _LoginScreenState extends State<LoginScreen> {
       onError: (String message) {
         if (!mounted) return;
         setState(() => _isLoading = false);
-        _showErrorDialog('OTP Failed', message);
+        if (context.mounted) _showErrorDialog('OTP Failed', message);
       },
     );
   }
