@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'auth_flow_guard.dart';
 import 'services/auth_service.dart';
 import 'widgets/pre_auth_support_sheet.dart';
 import 'widgets/goouts_loading_overlay.dart';
@@ -63,6 +64,9 @@ class _SignupScreenState extends State<SignupScreen> {
     final fullPhone =
         '+44${number.startsWith('0') ? number.substring(1) : number}';
 
+    // Activate guard BEFORE any Firebase activity so AppLaunchCoordinator's
+    // StreamBuilder does not swap the root widget mid-flow when auth state fires.
+    AuthFlowGuard.start();
     setState(() => _isLoading = true);
 
     await _authService.sendOtp(
@@ -84,11 +88,13 @@ class _SignupScreenState extends State<SignupScreen> {
       },
       onAutoVerified: () {
         if (!mounted) return;
+        AuthFlowGuard.end();
         setState(() => _isLoading = false);
         // auth state listener in main.dart handles navigation
       },
       onError: (message) {
         if (!mounted) return;
+        AuthFlowGuard.end();
         setState(() => _isLoading = false);
         if (context.mounted) GoOutsSheet.error(context, title: 'Sign Up Failed', message: message);
       },
