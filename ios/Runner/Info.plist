@@ -4,6 +4,11 @@
 <dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Disable Firebase/Google method swizzling — APNs is handled manually in AppDelegate.swift -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>GULAppDelegateProxyEnabled</key>
+	<false/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
