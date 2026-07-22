@@ -8,10 +8,40 @@ import FirebaseAuth
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // One-time Keychain wipe for this app — runs before Firebase/Flutter touch
+    // anything. This device has been used for many rounds of phone-auth crash
+    // testing; iOS Keychain data is NOT cleared by deleting the app (already
+    // tried) or by Reset Network Settings (also tried) — it only goes away on
+    // a full "Erase All Content and Settings" or if something explicitly
+    // deletes it. This does the deletion in code instead, exactly once per
+    // install (guarded by a UserDefaults flag so normal users don't get
+    // logged out on every launch going forward).
+    Self.wipeKeychainOnce()
+
     GeneratedPluginRegistrant.register(with: self)
     // Register for remote notifications so Firebase Phone Auth can use APNs
     application.registerForRemoteNotifications()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  private static func wipeKeychainOnce() {
+    let flagKey = "goouts_keychain_wiped_v1"
+    guard !UserDefaults.standard.bool(forKey: flagKey) else { return }
+
+    let secClasses: [CFString] = [
+      kSecClassGenericPassword,
+      kSecClassInternetPassword,
+      kSecClassCertificate,
+      kSecClassKey,
+      kSecClassIdentity,
+    ]
+    for secClass in secClasses {
+      let query: [CFString: Any] = [kSecClass: secClass]
+      SecItemDelete(query as CFDictionary)
+    }
+
+    UserDefaults.standard.set(true, forKey: flagKey)
+    UserDefaults.standard.synchronize()
   }
 
   // Forward APNs device token to Firebase Auth
