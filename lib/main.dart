@@ -105,7 +105,40 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
   @override
   void initState() {
     super.initState();
+    _guardAgainstStaleAuthSession();
     _initFcmHandling();
+  }
+
+  // Defends against a Jetsam/OOM kill seen on cold launch (device confirmed
+  // "per-process-limit", ~3.3GB, no button tap involved). Leading theory: a
+  // stale/partial Firebase Auth session left over from earlier testing is
+  // cached in the iOS Keychain (which survives a normal app delete +
+  // reinstall) and Firebase's SDK auto-attempts a silent token refresh for it
+  // on every launch, which can spiral if the underlying phone-auth session is
+  // corrupted. If refreshing the cached user's token doesn't succeed within a
+  // few seconds, force a sign-out to clear the bad session before it can
+  // repeat the cycle on the next launch.
+  Future<void> _guardAgainstStaleAuthSession() async {
+    final User? cachedUser = FirebaseAuth.instance.currentUser;
+    if (cachedUser == null) return;
+
+    try {
+      await cachedUser.getIdToken(true).timeout(const Duration(seconds: 6));
+    } catch (e, st) {
+      unawaited(FirebaseCrashlytics.instance.recordError(
+        e,
+        st,
+        reason: 'Stale auth session guard: forcing sign-out after failed/timed-out token refresh on launch',
+        fatal: false,
+      ));
+      try {
+        await FirebaseAuth.instance.signOut();
+      } catch (_) {
+        // Best-effort — if sign-out itself fails there's nothing more we can
+        // safely do here; the StreamBuilder will still show the splash/login
+        // flow either way.
+      }
+    }
   }
 
   @override
