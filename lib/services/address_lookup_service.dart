@@ -42,8 +42,8 @@ class AddressLookupService {
     final String cleaned =
         raw.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
     if (cleaned.length < 3) return cleaned;
-    return '\${cleaned.substring(0, cleaned.length - 3)} '
-        '\${cleaned.substring(cleaned.length - 3)}';
+    return '${cleaned.substring(0, cleaned.length - 3)} '
+        '${cleaned.substring(cleaned.length - 3)}';
   }
 
   /// True if the postcode is a Northern Ireland (BT) code.
@@ -192,7 +192,7 @@ class AddressLookupService {
           mapboxId: _str(m['mapbox_id']),
           name: name,
           placeFormatted: pf,
-          fullAddress: '\$name, \$pf',
+          fullAddress: '$name, $pf',
         );
       }).where((r) => r.mapboxId.isNotEmpty).toList();
     } catch (_) {
@@ -208,7 +208,7 @@ class AddressLookupService {
     try {
       final uri = Uri.https(
         'api.mapbox.com',
-        '/search/searchbox/v1/retrieve/\$mapboxId',
+        '/search/searchbox/v1/retrieve/$mapboxId',
         <String, String>{
           'session_token': sessionToken,
           'access_token': _mapboxToken,
