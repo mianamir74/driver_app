@@ -116,7 +116,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // True when both OS and Mapbox failed and the driver chose to type manually.
   // In this mode postcode verification is skipped at submit.
   bool _isManualAddressMode = false;
-  List<MapboxAddressResult> _addressSuggestions = [];
+  List<MapboxSuggestResult> _addressSuggestions = [];
+  String _mapboxSessionToken = AddressLookupService.generateSessionToken();
+  bool _isLookingUpAddress = false;
 
   String _accountType = 'driver';
   AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
@@ -679,20 +681,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return ref.getDownloadURL();
   }
 
-  /// Address Lookup — Mapbox primary, OS reserved for reactivation.
+  /// Address Lookup — Mapbox only (OS subscription inactive, getAddress.io
+  /// not subscribed — see memory files for reactivation notes).
   ///
-  /// CURRENT: Mapbox only (OS subscription inactive — cheaper for startup).
-  ///
-  /// TO RE-ENABLE OS (once subscribed):
-  ///   1. Uncomment the OS block below marked [OS BLOCK - UNCOMMENT TO REACTIVATE]
-  ///   2. Comment out or remove the Mapbox-primary block below it
-  ///   OS gives full UPRN + address picker list — better UX + cheaper per-call.
-  ///
-  /// Flow (current - Mapbox only):
-  ///   1. Validate postcode.
-  ///   2. Mapbox → if found: fill city + coords, user types house/street.
-  ///   3. If Mapbox fails → dialog: "Try One More Time" or "Enter Manually".
-  ///   4. Retry also fails → auto manual mode.
+  /// Flow:
+  ///   1. Driver types House/Business No + Postcode.
+  ///   2. We search Mapbox for "{houseNo} {postcode}" — Mapbox's address
+  ///      index reliably resolves this exact combination to a real building
+  ///      (bare postcode alone does NOT — Mapbox only returns the postcode
+  ///      centroid for that, never a per-building list).
+  ///   3. Real address matches shown in a dropdown — tap to auto-fill
+  ///      street/town/city/country/coords. No typing beyond house no.
+  ///   4. Nothing matches (e.g. brand-new build not yet indexed) → dialog:
+  ///      "Try Again" or "Enter Manually" (last-resort fallback only).
   Future<void> _confirmPostcode() async {
     FocusScope.of(context).unfocus();
     final String? postcodeError =
@@ -704,6 +705,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
       _showSnackBarMessage(
         'Please enter a valid postcode before continuing.',
+      );
+      return;
+    }
+
+    final String houseNo = _houseNoController.text.trim();
+    if (houseNo.isEmpty) {
+      _showSnackBarMessage(
+        'Please enter your House / Business No or Name first, then look up your address.',
       );
       return;
     }
@@ -720,9 +729,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      // Mapbox: validates postcode → returns up to 10 real addresses.
-      final List<MapboxAddressResult> results =
-          await _addressService.validatePostcode(postcode);
+      final List<MapboxSuggestResult> results = await _addressService.suggest(
+        '$houseNo $postcode',
+        _mapboxSessionToken,
+      );
 
       if (!mounted) return;
 
@@ -743,7 +753,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         return;
       }
 
-      // Postcode not recognised — offer retry or manual entry.
+      // Nothing matched — offer retry or manual entry.
       setState(() { _isConfirmingPostcode = false; });
       await _showAddressRetryDialog(postcode);
     } catch (e) {
@@ -756,7 +766,34 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  /// Called when the driver taps an address from the postcode dropdown.
+  /// Called when the driver taps a suggestion from the address dropdown.
+  /// Retrieves full details (street, coords, etc.) and auto-fills everything.
+  Future<void> _onSuggestionSelected(MapboxSuggestResult suggestion) async {
+    setState(() {
+      _isLookingUpAddress = true;
+      _addressSuggestions = [];
+    });
+    final MapboxAddressResult? address = await _addressService.retrieve(
+      suggestion.mapboxId,
+      _mapboxSessionToken,
+    );
+    // Every retrieve() call is billed — always rotate the session token
+    // afterwards so the NEXT lookup starts a fresh free suggest session.
+    _mapboxSessionToken = AddressLookupService.generateSessionToken();
+
+    if (!mounted) return;
+
+    if (address == null) {
+      setState(() => _isLookingUpAddress = false);
+      _showSnackBarMessage('Could not load that address — please try again.');
+      return;
+    }
+
+    _onAddressSelected(address);
+    setState(() => _isLookingUpAddress = false);
+  }
+
+  /// Fills every address field from a fully-resolved Mapbox result.
   void _onAddressSelected(MapboxAddressResult address) {
     final String resolvedCountry = _inferCountryFromPostcode(address.postcode);
     final List<String> cityOptions = AppLists.cityOptionsForCountry(resolvedCountry);
@@ -766,7 +803,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         : (address.city.isNotEmpty ? _matchCityOption(address.city, cityOptions) : null);
     setState(() {
       _postcodeController.text   = address.postcode;
-      _houseNoController.text    = address.houseNumber ?? '';
+      _houseNoController.text    = address.houseNumber?.isNotEmpty == true
+          ? address.houseNumber!
+          : _houseNoController.text;
       _streetNameController.text = address.street ?? '';
       _townController.text       = (address.town ?? address.city).toUpperCase();
       _selectedCountry           = resolvedCountry;
@@ -806,8 +845,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (message != null) _showSnackBarMessage(message);
   }
 
-  /// Shows a dialog when the primary (OS) lookup finds no addresses.
-  /// Offers "Try Backup Search" (Mapbox — second provider) or "Enter Manually".
+  /// Shows a dialog when Mapbox finds no matching address.
+  /// Offers "Try One More Time" or "Enter Manually" (last-resort fallback).
   Future<void> _showAddressRetryDialog(String postcode) async {
     if (!mounted) return;
     final String? choice = await showDialog<String>(
@@ -2192,70 +2231,161 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             _requiredValidator(value, 'Company Registration No'),
         onChanged: (_) => setState(() {}),
       ),
-        
-              SizedBox(height: 12),
-              if (_isConfirmingPostcode)
-                Padding(
-                  padding: EdgeInsets.only(bottom: 12),
-                  child: LinearProgressIndicator(
-                    minHeight: 4,
-                    color: _goOutsBlue,
-                    backgroundColor: Color(0xFFE5F4FB),
-                  ),
-                ),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: _isConfirmingPostcode ? null : _confirmPostcode,
-                  icon: _isConfirmingPostcode
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Icon(
-                          _isPostcodeVerified
-                              ? Icons.verified_rounded
-                              : Icons.search_rounded,
-                        ),
-                  label: AutoSizeText(
-                    _isPostcodeVerified
-                        ? 'Address Verified'
-                        : 'Look Up Postcode',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isPostcodeVerified
-                        ? const Color(0xFF16A34A)
-                        : _goOutsBlue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 16),
+
+              // ── Shop / Unit No — typed FIRST, needed to search Mapbox ──
+              TextFormField(
+                controller: _houseNoController,
+                textCapitalization: TextCapitalization.words,
+                readOnly: _addressFieldsLocked,
+                decoration: _inputDecoration('Shop / Unit No'),
+                validator: (String? value) => _requiredValidator(value, 'Shop / Unit No'),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+
+              // ── Postcode + Look Up Address ──────────────────────────
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(
+                    flex: 5,
+                    child: TextFormField(
+                      controller: _postcodeController,
+                      inputFormatters: _upperCaseFormatters(),
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: _inputDecoration('Postcode'),
+                      validator: _postcodeValidator,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 4,
+                    child: SizedBox(
+                      height: 58,
+                      child: ElevatedButton.icon(
+                        onPressed: (_isConfirmingPostcode || _isLookingUpAddress)
+                            ? null
+                            : _confirmPostcode,
+                        icon: _isConfirmingPostcode
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Icon(
+                                _isPostcodeVerified
+                                    ? Icons.verified_rounded
+                                    : Icons.search_rounded,
+                              ),
+                        label: AutoSizeText(
+                          _isPostcodeVerified ? 'Verified' : 'Look Up Address',
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isPostcodeVerified
+                              ? const Color(0xFF16A34A)
+                              : _goOutsBlue,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Address dropdown ─────────────────────────────────────
+              if (_addressSuggestions.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _goOutsBlue.withValues(alpha: 0.2)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+                        child: Text(
+                          'Select your address:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ),
+                      ..._addressSuggestions.map((s) => InkWell(
+                        onTap: () => _onSuggestionSelected(s),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on_outlined, color: _goOutsBlue, size: 16),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      s.name,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0D1B3E),
+                                      ),
+                                    ),
+                                    Text(
+                                      s.placeFormatted,
+                                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 16),
+                            ],
+                          ),
+                        ),
+                      )),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
+                ),
+              ],
+              if (_isLookingUpAddress) ...[
+                const SizedBox(height: 10),
+                const Row(
+                  children: [
+                    SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                    SizedBox(width: 8),
+                    Text('Loading address…', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 8),
               if (_isPostcodeVerified)
                 Row(
                   children: <Widget>[
-                    Icon(
-                      Icons.shield_rounded,
-                      size: 16,
-                      color: Color(0xFF16A34A),
-                    ),
-                    SizedBox(width: 6),
-                    Expanded(
+                    const Icon(Icons.shield_rounded, size: 16, color: Color(0xFF16A34A)),
+                    const SizedBox(width: 6),
+                    const Expanded(
                       child: Text(
-                        'Official UPRN Address Verified',
+                        'Address Verified',
                         style: TextStyle(
                           color: Color(0xFF16A34A),
                           fontWeight: FontWeight.w600,
@@ -2272,12 +2402,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         foregroundColor: _goOutsBlue,
                       ),
-                      child: AutoSizeText(
+                      child: const AutoSizeText(
                         'Edit manually',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                     ),
                   ],
@@ -2288,13 +2415,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   child: TextButton.icon(
                     onPressed:
                         _isConfirmingPostcode ? null : _handleEditManually,
-                    icon: Icon(Icons.edit_rounded, size: 16),
-                    label: AutoSizeText(
+                    icon: const Icon(Icons.edit_rounded, size: 16),
+                    label: const AutoSizeText(
                       "Can't find your address? Enter manually",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                     ),
                     style: TextButton.styleFrom(
                       foregroundColor: _goOutsBlue,
@@ -2304,6 +2428,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                   ),
                 ),
+              const SizedBox(height: 16),
+
+              // ── Street / Road Name — auto-filled when address picked ──
+              TextFormField(
+                controller: _streetNameController,
+                textCapitalization: TextCapitalization.words,
+                readOnly: _addressFieldsLocked,
+                decoration: _inputDecoration('Street / Road Name'),
+                validator: (String? value) => _requiredValidator(value, 'Street / Road Name'),
+              ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _selectedCountry,
@@ -2339,20 +2473,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   });
                 },
                 validator: _businessCityValidator,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _houseNoController,
-                textCapitalization: TextCapitalization.words,
-                decoration: _inputDecoration('Shop / Unit No'),
-                validator: (String? value) => _requiredValidator(value, 'Shop / Unit No'),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _streetNameController,
-                textCapitalization: TextCapitalization.words,
-                decoration: _inputDecoration('Street / Road Name'),
-                validator: (String? value) => _requiredValidator(value, 'Street / Road Name'),
               ),
             ],
           ),
@@ -2630,7 +2750,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           onConfirmPostcode: _confirmPostcode,
           onEditManually: _handleEditManually,
           addressSuggestions: _addressSuggestions,
-          onAddressSelected: _onAddressSelected,
+          onAddressSelected: _onSuggestionSelected,
+          isLookingUpAddress: _isLookingUpAddress,
           inputDecorationBuilder: _inputDecoration,
           upperCaseFormattersBuilder: _upperCaseFormatters,
           requiredValidator: _requiredValidator,

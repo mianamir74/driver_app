@@ -8,12 +8,16 @@ import '../../../services/address_lookup_service.dart';
 /// Driver registration — Address section.
 ///
 /// Address field order:
-///   1. Postcode  (user types → Look Up → dropdown of real addresses appears)
-///   2. House / Business No or Name  (auto-filled when address picked)
+///   1. House / Business No or Name  (typed FIRST — needed to search)
+///   2. Postcode + Look Up           (user types → dropdown of real addresses)
 ///   3. Street / Road Name           (auto-filled when address picked)
 ///   4. Town                         (auto-filled from Mapbox)
 ///   5. City                         (auto-filled from postcode mapping)
 ///   6. Country                      (auto-filled from postcode prefix)
+///
+/// Why house number first: Mapbox can only match a SPECIFIC building when
+/// given "{house no} {postcode}" together — a bare postcode alone only
+/// resolves to the postcode's centroid, never a per-building list.
 class ContactInfoSection extends StatelessWidget {
   final TextEditingController postcodeController;
   final TextEditingController houseNoController;
@@ -33,12 +37,15 @@ class ContactInfoSection extends StatelessWidget {
   final bool isManualAddressMode;
   final bool lockAddressFields;
 
+  /// True while a tapped suggestion is being resolved to a full address.
+  final bool isLookingUpAddress;
+
   final VoidCallback onConfirmPostcode;
   final VoidCallback? onEditManually;
 
   /// Addresses returned by the last Look Up — shown as a dropdown.
-  final List<MapboxAddressResult> addressSuggestions;
-  final ValueChanged<MapboxAddressResult>? onAddressSelected;
+  final List<MapboxSuggestResult> addressSuggestions;
+  final ValueChanged<MapboxSuggestResult>? onAddressSelected;
 
   final InputDecoration Function(String) inputDecorationBuilder;
   final List<TextInputFormatter> Function() upperCaseFormattersBuilder;
@@ -64,6 +71,7 @@ class ContactInfoSection extends StatelessWidget {
     required this.isConfirmingPostcode,
     this.isManualAddressMode = false,
     this.lockAddressFields = false,
+    this.isLookingUpAddress = false,
     required this.onConfirmPostcode,
     required this.inputDecorationBuilder,
     required this.upperCaseFormattersBuilder,
@@ -117,7 +125,22 @@ class ContactInfoSection extends StatelessWidget {
               ),
             ),
 
-          // ── 1. Postcode + Look Up button ─────────────────────────────
+          // ── 1. House / Business No or Name (typed FIRST) ─────────────
+          TextFormField(
+            controller: houseNoController,
+            inputFormatters: upperCaseFormattersBuilder(),
+            textCapitalization: TextCapitalization.characters,
+            readOnly: lockAddressFields,
+            decoration: _withTick(
+              label: 'House / Business No or Name',
+              showTick: _hasText(houseNoController),
+            ),
+            validator: (String? v) =>
+                requiredValidator(v, 'House / Business No or Name'),
+          ),
+          const SizedBox(height: 16),
+
+          // ── 2. Postcode + Look Up button ─────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -140,8 +163,9 @@ class ContactInfoSection extends StatelessWidget {
                 child: SizedBox(
                   height: 58,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        isConfirmingPostcode ? null : onConfirmPostcode,
+                    onPressed: (isConfirmingPostcode || isLookingUpAddress)
+                        ? null
+                        : onConfirmPostcode,
                     icon: isConfirmingPostcode
                         ? const SizedBox(
                             width: 18,
@@ -157,7 +181,7 @@ class ContactInfoSection extends StatelessWidget {
                                 : Icons.search_rounded,
                           ),
                     label: AutoSizeText(
-                      isPostcodeVerified ? 'Verified' : 'Look Up Postcode',
+                      isPostcodeVerified ? 'Verified' : 'Look Up Address',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
@@ -209,8 +233,8 @@ class ContactInfoSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ...addressSuggestions.map((addr) => InkWell(
-                    onTap: () => onAddressSelected?.call(addr),
+                  ...addressSuggestions.map((s) => InkWell(
+                    onTap: () => onAddressSelected?.call(s),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -225,10 +249,7 @@ class ContactInfoSection extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  addr.fullAddress
-                                      .split(',')
-                                      .take(2)
-                                      .join(','),
+                                  s.name,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -236,7 +257,7 @@ class ContactInfoSection extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  addr.postcode,
+                                  s.placeFormatted,
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: Colors.grey[500],
@@ -254,6 +275,20 @@ class ContactInfoSection extends StatelessWidget {
                   const SizedBox(height: 4),
                 ],
               ),
+            ),
+          ],
+          if (isLookingUpAddress) ...[
+            const SizedBox(height: 10),
+            const Row(
+              children: [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 8),
+                Text('Loading address…', style: TextStyle(fontSize: 12)),
+              ],
             ),
           ],
 
@@ -368,21 +403,6 @@ class ContactInfoSection extends StatelessWidget {
             ),
 
           const SizedBox(height: 12),
-
-          // ── 2. House / Business No or Name ───────────────────────────
-          TextFormField(
-            controller: houseNoController,
-            inputFormatters: upperCaseFormattersBuilder(),
-            textCapitalization: TextCapitalization.characters,
-            readOnly: lockAddressFields,
-            decoration: _withTick(
-              label: 'House / Business No or Name',
-              showTick: _hasText(houseNoController),
-            ),
-            validator: (String? v) =>
-                requiredValidator(v, 'House / Business No or Name'),
-          ),
-          const SizedBox(height: 16),
 
           // ── 3. Street / Road Name ────────────────────────────────────
           TextFormField(

@@ -128,7 +128,9 @@ class _BusinessRegistrationScreenState
   double? _verifiedLongitude;
   // Locked only when address was actually auto-filled from OS bottom sheet.
   bool _addressFieldsLocked = false;
-  List<MapboxAddressResult> _addressSuggestions = [];
+  List<MapboxSuggestResult> _addressSuggestions = [];
+  String _mapboxSessionToken = AddressLookupService.generateSessionToken();
+  bool _isLookingUpAddress = false;
 
   XFile? _selfieImage;
 
@@ -378,6 +380,14 @@ class _BusinessRegistrationScreenState
       return;
     }
 
+    final String shopUnitNo = _shopUnitNoController.text.trim();
+    if (shopUnitNo.isEmpty) {
+      _showSnackBarMessage(
+        'Please enter your Shop/Unit No first, then look up your address.',
+      );
+      return;
+    }
+
     final String postcode = _normalizedPostcode();
     _isUpdatingPostcodeProgrammatically = true;
     _postcodeController.text = postcode;
@@ -391,9 +401,13 @@ class _BusinessRegistrationScreenState
     });
 
     try {
-      // Mapbox: validates postcode → returns up to 10 real addresses.
-      final List<MapboxAddressResult> results =
-          await _addressService.validatePostcode(postcode);
+      // Mapbox reliably matches a SPECIFIC building when given
+      // "{shop/unit no} {postcode}" together — a bare postcode alone only
+      // ever resolves to the postcode's centroid, never a per-building list.
+      final List<MapboxSuggestResult> results = await _addressService.suggest(
+        '$shopUnitNo $postcode',
+        _mapboxSessionToken,
+      );
 
       if (!mounted) return;
 
@@ -411,7 +425,7 @@ class _BusinessRegistrationScreenState
         _addressFieldsLocked = false;
       });
       _showSnackBarMessage(
-        'Postcode not found. Please check it or tap "Enter manually" below.',
+        'Address not found. Please check it or tap "Enter manually" below.',
       );
     } catch (e) {
       if (!mounted) return;
@@ -420,12 +434,39 @@ class _BusinessRegistrationScreenState
         _isPostcodeVerified = false;
       });
       _showSnackBarMessage(
-        'We could not verify this postcode right now. Please try again.',
+        'We could not verify this address right now. Please try again.',
       );
     }
   }
 
-  /// Called when the owner taps an address from the postcode dropdown.
+  /// Called when the owner taps a suggestion from the address dropdown.
+  /// Retrieves full details (street, coords, etc.) and auto-fills everything.
+  Future<void> _onSuggestionSelected(MapboxSuggestResult suggestion) async {
+    setState(() {
+      _isLookingUpAddress = true;
+      _addressSuggestions = [];
+    });
+    final MapboxAddressResult? address = await _addressService.retrieve(
+      suggestion.mapboxId,
+      _mapboxSessionToken,
+    );
+    // retrieve() is the billed call — rotate the token so the NEXT lookup
+    // starts a fresh free suggest() session.
+    _mapboxSessionToken = AddressLookupService.generateSessionToken();
+
+    if (!mounted) return;
+
+    if (address == null) {
+      setState(() => _isLookingUpAddress = false);
+      _showSnackBarMessage('Could not load that address — please try again.');
+      return;
+    }
+
+    _onAddressSelected(address);
+    setState(() => _isLookingUpAddress = false);
+  }
+
+  /// Fills every address field from a fully-resolved Mapbox result.
   void _onAddressSelected(MapboxAddressResult address) {
     final String resolvedCountry = _inferCountryFromPostcode(address.postcode);
     final List<String> cityOptions = _cityOptionsByCountry[resolvedCountry] ?? <String>[];
@@ -435,7 +476,9 @@ class _BusinessRegistrationScreenState
         : (address.city.isNotEmpty ? _matchCityOption(address.city, cityOptions) : null);
     setState(() {
       _postcodeController.text   = address.postcode;
-      _shopUnitNoController.text           = address.houseNumber ?? '';
+      _shopUnitNoController.text = address.houseNumber?.isNotEmpty == true
+          ? address.houseNumber!
+          : _shopUnitNoController.text;
       _roadNameController.text          = address.street ?? '';
       _townController.text       = (address.town ?? address.city).toUpperCase();
       _selectedCountry           = resolvedCountry;
@@ -1147,7 +1190,7 @@ class _BusinessRegistrationScreenState
               _buildSectionCard(
                 title: 'Business Address',
                 subtitle:
-                    'Type your postcode → tap "Find Official Address" → pick from the list.',
+                    'Enter your Shop/Unit No and postcode → tap "Look Up Address" → pick from the list.',
                 children: <Widget>[
                   // ── Loading bar while OS lookup runs ───────────────────
                   if (_isConfirmingPostcode)
@@ -1159,6 +1202,23 @@ class _BusinessRegistrationScreenState
                         backgroundColor: Color(0xFFE5F4FB),
                       ),
                     ),
+
+                  // ── Shop/Unit No — typed FIRST, needed to search Mapbox ─
+                  TextFormField(
+                    controller: _shopUnitNoController,
+                    readOnly: _addressFieldsLocked,
+                    decoration: _completedInputDecoration(
+                      label: 'Shop/Unit No',
+                      complete: _isShopUnitComplete,
+                      helperText: _addressFieldsLocked
+                          ? 'Auto-filled from official record'
+                          : null,
+                    ),
+                    validator: (String? value) =>
+                        _requiredValidator(value, 'Shop/Unit No'),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 12),
 
                   // ── Postcode + Find button (side by side) ──────────────
                   Row(
@@ -1189,7 +1249,7 @@ class _BusinessRegistrationScreenState
                         child: SizedBox(
                           height: 58,
                           child: ElevatedButton.icon(
-                            onPressed: _isConfirmingPostcode
+                            onPressed: (_isConfirmingPostcode || _isLookingUpAddress)
                                 ? null
                                 : _confirmPostcode,
                             icon: _isConfirmingPostcode
@@ -1209,7 +1269,7 @@ class _BusinessRegistrationScreenState
                             label: AutoSizeText(
                               _isPostcodeVerified
                                   ? 'Verified'
-                                  : 'Find Official Address',
+                                  : 'Look Up Address',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
@@ -1262,8 +1322,8 @@ class _BusinessRegistrationScreenState
                               ),
                             ),
                           ),
-                          ..._addressSuggestions.map((addr) => InkWell(
-                            onTap: () => _onAddressSelected(addr),
+                          ..._addressSuggestions.map((s) => InkWell(
+                            onTap: () => _onSuggestionSelected(s),
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -1278,10 +1338,7 @@ class _BusinessRegistrationScreenState
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          addr.fullAddress
-                                              .split(',')
-                                              .take(2)
-                                              .join(','),
+                                          s.name,
                                           style: const TextStyle(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
@@ -1289,7 +1346,7 @@ class _BusinessRegistrationScreenState
                                           ),
                                         ),
                                         Text(
-                                          addr.postcode,
+                                          s.placeFormatted,
                                           style: TextStyle(
                                             fontSize: 11,
                                             color: Colors.grey[500],
@@ -1307,6 +1364,16 @@ class _BusinessRegistrationScreenState
                           const SizedBox(height: 4),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  if (_isLookingUpAddress) ...[
+                    const Row(
+                      children: [
+                        SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                        SizedBox(width: 8),
+                        Text('Loading address…', style: TextStyle(fontSize: 12)),
+                      ],
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -1375,23 +1442,6 @@ class _BusinessRegistrationScreenState
                         ),
                       ),
                     ),
-                  const SizedBox(height: 12),
-
-                  // ── Shop / Unit No (locked only when OS auto-filled) ───
-                  TextFormField(
-                    controller: _shopUnitNoController,
-                    readOnly: _addressFieldsLocked,
-                    decoration: _completedInputDecoration(
-                      label: 'Shop/Unit No',
-                      complete: _isShopUnitComplete,
-                      helperText: _addressFieldsLocked
-                          ? 'Auto-filled from official record'
-                          : null,
-                    ),
-                    validator: (String? value) =>
-                        _requiredValidator(value, 'Shop/Unit No'),
-                    onChanged: (_) => setState(() {}),
-                  ),
                   const SizedBox(height: 12),
 
                   // ── Road Name ─────────────────────────────────────────
