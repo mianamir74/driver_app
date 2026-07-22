@@ -54,11 +54,14 @@ Future<void> main() async {
   // by Firebase Messaging and must happen before the isolate is spawned.
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  // NOTE: Full FCM initialisation (requestPermission, getToken) is intentionally
-  // deferred to AppLaunchCoordinator.initState() via addPostFrameCallback.
-  // Calling it here — before runApp() and before the Flutter UIWindow is active —
-  // causes Firebase Auth's async Swift code to fire a preconditionFailure crash
-  // because no foreground UIWindowScene is accessible yet (~2 s into launch).
+  // Initialise FCM (token sync + APNs registration) BEFORE runApp(), matching
+  // the working goouts_app pattern (lib/main.dart there does the same). This
+  // makes sure Auth.auth() has a valid APNs token registered before the user
+  // can reach the phone-number Continue button, avoiding Firebase Auth's iOS
+  // reCAPTCHA-fallback path — which is what was crashing on Signup Continue.
+  // initialize() itself never calls requestPermission() (that stays deferred
+  // to askPermission(), called post-login), so this does not prompt the user.
+  await DriverFcmService.instance.initialize();
 
   runApp(const GoOutsDriverApp());
 }
