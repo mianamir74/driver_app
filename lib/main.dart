@@ -54,14 +54,12 @@ Future<void> main() async {
   // by Firebase Messaging and must happen before the isolate is spawned.
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  // Initialise FCM (token sync + APNs registration) BEFORE runApp(), matching
-  // the working goouts_app pattern (lib/main.dart there does the same). This
-  // makes sure Auth.auth() has a valid APNs token registered before the user
-  // can reach the phone-number Continue button, avoiding Firebase Auth's iOS
-  // reCAPTCHA-fallback path — which is what was crashing on Signup Continue.
-  // initialize() itself never calls requestPermission() (that stays deferred
-  // to askPermission(), called post-login), so this does not prompt the user.
-  await DriverFcmService.instance.initialize();
+  // NOTE: Full FCM initialisation (requestPermission, getToken) is intentionally
+  // deferred to AppLaunchCoordinator.initState() via addPostFrameCallback.
+  // REVERTED: awaiting it here before runApp() made the crash WORSE — build 507
+  // showed a guaranteed ~10s blank screen then crash on every launch, instead of
+  // the previous intermittent crash on Signup Continue. The real fix is native
+  // (AppDelegate.swift defers setAPNSToken to the next run loop tick instead).
 
   runApp(const GoOutsDriverApp());
 }

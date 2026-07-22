@@ -14,10 +14,18 @@ import FirebaseAuth
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  // Forward APNs device token to Firebase Auth
+  // Forward APNs device token to Firebase Auth.
+  // Deferred to the next run loop tick via DispatchQueue.main.async — calling
+  // Auth.auth().setAPNSToken() synchronously inside this delegate callback can
+  // fire before the app's UIWindowScene is fully attached (this callback can
+  // arrive extremely early on cold launch, before Flutter's engine/window is
+  // ready), which crashes Firebase Auth's iOS SDK with a Swift precondition
+  // failure. Pushing it to the next tick lets scene attachment finish first.
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    DispatchQueue.main.async {
+      Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    }
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 
