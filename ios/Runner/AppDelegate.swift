@@ -21,10 +21,22 @@ import FirebaseAuth
   // arrive extremely early on cold launch, before Flutter's engine/window is
   // ready), which crashes Firebase Auth's iOS SDK with a Swift precondition
   // failure. Pushing it to the next tick lets scene attachment finish first.
+  //
+  // type: .prod (not .unknown) — every build we ship goes out via TestFlight/
+  // App Store, which always runs in the production APNs environment. .unknown
+  // asks Firebase to auto-detect the environment by parsing the embedded
+  // provisioning profile, and that detection is known to misfire on IPAs
+  // built by non-Xcode CI pipelines (like `flutter build ipa` on GitHub
+  // Actions). If Firebase silently records the token under the wrong
+  // environment, the silent push it sends during phone-auth verification
+  // (verifyClient) never reaches this device, and the SDK's internal wait/
+  // retry loop for that push can spin — a plausible explanation for the
+  // memory blow-up (Jetsam per-process-limit) seen on launch. Being explicit
+  // removes that guesswork entirely.
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     DispatchQueue.main.async {
-      Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+      Auth.auth().setAPNSToken(deviceToken, type: .prod)
     }
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
