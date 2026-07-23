@@ -42,6 +42,18 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // TEMP DIAGNOSTIC: disable Firestore's on-disk offline cache.
+  // The OTP-Continue crash is the very FIRST time this app session ever
+  // touches Cloud Firestore — its native SDK has to spin up a brand-new
+  // gRPC channel + on-disk LevelDB persistence cache at the exact same
+  // moment Firebase Auth is writing a fresh session into a just-wiped
+  // Keychain. Both are heavy one-time native initializations landing in
+  // the same ~3s window as the memory spike in both Jetsam logs. Turning
+  // persistence off removes that entire subsystem as a variable. Revert
+  // (delete these 2 lines) once we know if this fixes it.
+  FirebaseFirestore.instance.settings =
+      const Settings(persistenceEnabled: false);
+
   // ── Crashlytics ─────────────────────────────────────────────────────────────
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   PlatformDispatcher.instance.onError = (error, stack) {
