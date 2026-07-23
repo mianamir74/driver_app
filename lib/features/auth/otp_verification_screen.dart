@@ -191,21 +191,45 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     // Check if this is an existing user (forgot password / re-login)
     // or a brand new signup that still needs registration.
+    // TEMP DIAGNOSTIC: split into 3 sequential calls (was Future.wait running
+    // all 3 in parallel) with a breadcrumb + 6s timeout around EACH one. This
+    // is the first Firestore network round-trip in the session (right after
+    // signInWithCredential, which now succeeds per build 521 testing) — 3
+    // simultaneous gRPC streams opening at once is heavier than 1-at-a-time,
+    // and sequential + per-call breadcrumbs will show exactly which
+    // collection lookup the crash happens on instead of "somewhere in here".
     _bc('completeVerification: starting firestore lookups');
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final List<DocumentSnapshot<Map<String, dynamic>>> results =
-        await Future.wait([
-      firestore.collection('drivers').doc(user.uid).get(),
-      firestore.collection('cab_drivers').doc(user.uid).get(),
-      firestore.collection('businesses').doc(user.uid).get(),
-    ]);
+
+    _bc('completeVerification: querying drivers');
+    final DocumentSnapshot<Map<String, dynamic>> driverResult = await firestore
+        .collection('drivers')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 6));
+    _bc('completeVerification: drivers query done');
+
+    _bc('completeVerification: querying cab_drivers');
+    final DocumentSnapshot<Map<String, dynamic>> cabDriverResult = await firestore
+        .collection('cab_drivers')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 6));
+    _bc('completeVerification: cab_drivers query done');
+
+    _bc('completeVerification: querying businesses');
+    final DocumentSnapshot<Map<String, dynamic>> businessResult = await firestore
+        .collection('businesses')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 6));
     _bc('completeVerification: firestore lookups done');
 
     if (!mounted) return;
 
-    final bool isDriver    = results[0].exists;
-    final bool isCabDriver = results[1].exists;
-    final bool isBusiness  = results[2].exists;
+    final bool isDriver    = driverResult.exists;
+    final bool isCabDriver = cabDriverResult.exists;
+    final bool isBusiness  = businessResult.exists;
 
     // Release guard just before navigation.
     AuthFlowGuard.end();
