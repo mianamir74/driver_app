@@ -45,6 +45,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool _hasNavigated = false; // guard against double navigation (verificationCompleted + manual OTP race)
   String _accountType = 'driver';
 
+  // Visible on-screen status — shows exactly which step is running right now.
+  // Two Jetsam memory-kill logs on this exact flow gave no stack trace, and
+  // Crashlytics is currently blocked on a dSYM upload, so this is the fastest
+  // way to see (with your own eyes) which step the app reaches before it dies.
+  String _statusText = '';
+
   @override
   void initState() {
     super.initState();
@@ -149,13 +155,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         : 'Driver';
   }
 
-  // Breadcrumbs — written to disk immediately by Crashlytics, so they survive
-  // even an abrupt OS memory-kill (Jetsam) and show up in the Crashlytics
-  // console next time the app launches, letting us pinpoint exactly which
-  // step this reached before dying (two Jetsam events already confirmed a
-  // ~3GB blow-up happening somewhere in this flow, with no stack trace).
+  // Breadcrumbs — written to disk immediately by Crashlytics (for later), AND
+  // shown on screen right now (for immediate visual confirmation of exactly
+  // which step the app reaches before it dies — no logs or console needed).
   void _bc(String step) {
     FirebaseCrashlytics.instance.log('OTP-VERIFY: $step');
+    if (mounted) {
+      setState(() {
+        _statusText = step;
+      });
+    }
   }
 
   Future<void> _completeSuccessfulVerification() async {
@@ -514,6 +523,26 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                 ),
               ),
+              if (_isVerifying && _statusText.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amber.shade200),
+                  ),
+                  child: Text(
+                    'DEBUG STEP: $_statusText',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               TextButton(
                 onPressed: _isResending || _isVerifying ? null : _resendCode,
