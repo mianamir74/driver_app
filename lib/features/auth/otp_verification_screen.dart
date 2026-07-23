@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -148,16 +149,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         : 'Driver';
   }
 
+  // Breadcrumbs — written to disk immediately by Crashlytics, so they survive
+  // even an abrupt OS memory-kill (Jetsam) and show up in the Crashlytics
+  // console next time the app launches, letting us pinpoint exactly which
+  // step this reached before dying (two Jetsam events already confirmed a
+  // ~3GB blow-up happening somewhere in this flow, with no stack trace).
+  void _bc(String step) {
+    FirebaseCrashlytics.instance.log('OTP-VERIFY: $step');
+  }
+
   Future<void> _completeSuccessfulVerification() async {
     // Guard against double navigation (verificationCompleted firing after codeSent on Android)
     if (_hasNavigated) return;
     _hasNavigated = true;
 
+    _bc('completeVerification: start');
     await _savePendingAccountType();
+    _bc('completeVerification: saved pending account type');
 
     if (!mounted) return;
 
     final User? user = FirebaseAuth.instance.currentUser;
+    _bc('completeVerification: currentUser=${user?.uid ?? "null"}');
 
     if (user == null) {
       // Sign-in completed but no user returned — release guard and pop to root
@@ -169,6 +182,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     // Check if this is an existing user (forgot password / re-login)
     // or a brand new signup that still needs registration.
+    _bc('completeVerification: starting firestore lookups');
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
     final List<DocumentSnapshot<Map<String, dynamic>>> results =
         await Future.wait([
@@ -176,6 +190,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       firestore.collection('cab_drivers').doc(user.uid).get(),
       firestore.collection('businesses').doc(user.uid).get(),
     ]);
+    _bc('completeVerification: firestore lookups done');
 
     if (!mounted) return;
 
@@ -187,11 +202,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     AuthFlowGuard.end();
 
     if (isBusiness) {
+      _bc('completeVerification: navigating to BusinessHomeScreen');
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const BusinessHomeScreen()),
         (route) => false,
       );
     } else if (isDriver || isCabDriver) {
+      _bc('completeVerification: navigating to DriverHomeScreen');
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const DriverHomeScreen()),
         (route) => false,
@@ -199,11 +216,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     } else {
       // New user — send directly to the correct referral/registration screen
       if (_accountType == 'business') {
+        _bc('completeVerification: navigating to BusinessReferralCodeScreen');
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const BusinessReferralCodeScreen()),
           (route) => false,
         );
       } else {
+        _bc('completeVerification: navigating to ReferralCodeScreen');
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (_) => ReferralCodeScreen(accountType: _accountType),
@@ -212,6 +231,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         );
       }
     }
+    _bc('completeVerification: navigation call returned');
   }
 
   Future<void> _verifyOtp() async {
@@ -224,12 +244,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     });
 
     try {
+      _bc('verifyOtp: building credential');
       final PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: _verificationId,
         smsCode: _otpController.text.trim(),
       );
 
+      _bc('verifyOtp: calling signInWithCredential');
       await FirebaseAuth.instance.signInWithCredential(credential);
+      _bc('verifyOtp: signInWithCredential returned successfully');
 
       await _completeSuccessfulVerification();
     } on FirebaseAuthException catch (e) {
