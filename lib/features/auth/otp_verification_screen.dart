@@ -191,45 +191,67 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     // Check if this is an existing user (forgot password / re-login)
     // or a brand new signup that still needs registration.
-    // TEMP DIAGNOSTIC: split into 3 sequential calls (was Future.wait running
-    // all 3 in parallel) with a breadcrumb + 6s timeout around EACH one. This
-    // is the first Firestore network round-trip in the session (right after
-    // signInWithCredential, which now succeeds per build 521 testing) — 3
-    // simultaneous gRPC streams opening at once is heavier than 1-at-a-time,
-    // and sequential + per-call breadcrumbs will show exactly which
-    // collection lookup the crash happens on instead of "somewhere in here".
-    _bc('completeVerification: starting firestore lookups');
-    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    //
+    // TEMP DIAGNOSTIC (build 523): builds 521/522 proved persistence-off and
+    // sequential-instead-of-parallel queries made no difference — the crash
+    // reappeared at the exact same point both times ("starting firestore
+    // lookups"). That means it isn't about HOW we query, it's Firestore's
+    // very first network call in this app session that's fatal, full stop.
+    // This build skips Firestore entirely here (isDriver/isCabDriver/
+    // isBusiness are hard-coded false, routing every sign-in as if brand new)
+    // to prove that conclusively:
+    //   - If build 523 does NOT crash -> 100% confirmed, Firestore's native
+    //     iOS SDK is the root cause. Next step is replacing this native
+    //     lookup with a Cloud Function/REST call that avoids the SDK.
+    //   - If build 523 STILL crashes with no Firestore touched at all ->
+    //     Firestore is innocent and something else near this point (likely
+    //     Auth's post-sign-in state write, or the navigation call itself)
+    //     is the real cause, and we start over on this file for suspects.
+    // MUST BE REVERTED before shipping — right now every sign-in, new or
+    // returning, gets routed as brand new (wrong home screen for existing
+    // users).
+    const bool kSkipFirestoreLookupDiagnostic = true;
 
-    _bc('completeVerification: querying drivers');
-    final DocumentSnapshot<Map<String, dynamic>> driverResult = await firestore
-        .collection('drivers')
-        .doc(user.uid)
-        .get()
-        .timeout(const Duration(seconds: 6));
-    _bc('completeVerification: drivers query done');
+    bool isDriver = false;
+    bool isCabDriver = false;
+    bool isBusiness = false;
 
-    _bc('completeVerification: querying cab_drivers');
-    final DocumentSnapshot<Map<String, dynamic>> cabDriverResult = await firestore
-        .collection('cab_drivers')
-        .doc(user.uid)
-        .get()
-        .timeout(const Duration(seconds: 6));
-    _bc('completeVerification: cab_drivers query done');
+    if (kSkipFirestoreLookupDiagnostic) {
+      _bc('completeVerification: SKIPPING firestore lookups (diagnostic)');
+    } else {
+      _bc('completeVerification: starting firestore lookups');
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    _bc('completeVerification: querying businesses');
-    final DocumentSnapshot<Map<String, dynamic>> businessResult = await firestore
-        .collection('businesses')
-        .doc(user.uid)
-        .get()
-        .timeout(const Duration(seconds: 6));
-    _bc('completeVerification: firestore lookups done');
+      _bc('completeVerification: querying drivers');
+      final DocumentSnapshot<Map<String, dynamic>> driverResult = await firestore
+          .collection('drivers')
+          .doc(user.uid)
+          .get()
+          .timeout(const Duration(seconds: 6));
+      _bc('completeVerification: drivers query done');
+
+      _bc('completeVerification: querying cab_drivers');
+      final DocumentSnapshot<Map<String, dynamic>> cabDriverResult = await firestore
+          .collection('cab_drivers')
+          .doc(user.uid)
+          .get()
+          .timeout(const Duration(seconds: 6));
+      _bc('completeVerification: cab_drivers query done');
+
+      _bc('completeVerification: querying businesses');
+      final DocumentSnapshot<Map<String, dynamic>> businessResult = await firestore
+          .collection('businesses')
+          .doc(user.uid)
+          .get()
+          .timeout(const Duration(seconds: 6));
+      _bc('completeVerification: firestore lookups done');
+
+      isDriver = driverResult.exists;
+      isCabDriver = cabDriverResult.exists;
+      isBusiness = businessResult.exists;
+    }
 
     if (!mounted) return;
-
-    final bool isDriver    = driverResult.exists;
-    final bool isCabDriver = cabDriverResult.exists;
-    final bool isBusiness  = businessResult.exists;
 
     // Release guard just before navigation.
     AuthFlowGuard.end();
