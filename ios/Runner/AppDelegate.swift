@@ -8,15 +8,14 @@ import FirebaseAuth
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // One-time Keychain wipe for this app — runs before Firebase/Flutter touch
-    // anything. This device has been used for many rounds of phone-auth crash
-    // testing; iOS Keychain data is NOT cleared by deleting the app (already
-    // tried) or by Reset Network Settings (also tried) — it only goes away on
-    // a full "Erase All Content and Settings" or if something explicitly
-    // deletes it. This does the deletion in code instead, exactly once per
-    // install (guarded by a UserDefaults flag so normal users don't get
-    // logged out on every launch going forward).
-    Self.wipeKeychainOnce()
+    // TEMPORARY DIAGNOSTIC: wipe Keychain on EVERY launch (not gated to once).
+    // The one-time version wasn't enough — signing in during testing writes a
+    // brand-new session to Keychain, and THAT session hits the same crash on
+    // the next cold launch, re-trapping the test device. Wiping every launch
+    // keeps the device testable while we chase the real fix. This must be
+    // reverted to one-time (or removed) before shipping to real users —
+    // it currently signs everyone out on every app open.
+    Self.wipeKeychainEveryLaunch()
 
     GeneratedPluginRegistrant.register(with: self)
     // Register for remote notifications so Firebase Phone Auth can use APNs
@@ -24,10 +23,7 @@ import FirebaseAuth
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  private static func wipeKeychainOnce() {
-    let flagKey = "goouts_keychain_wiped_v1"
-    guard !UserDefaults.standard.bool(forKey: flagKey) else { return }
-
+  private static func wipeKeychainEveryLaunch() {
     let secClasses: [CFString] = [
       kSecClassGenericPassword,
       kSecClassInternetPassword,
@@ -39,9 +35,6 @@ import FirebaseAuth
       let query: [CFString: Any] = [kSecClass: secClass]
       SecItemDelete(query as CFDictionary)
     }
-
-    UserDefaults.standard.set(true, forKey: flagKey)
-    UserDefaults.standard.synchronize()
   }
 
   // Forward APNs device token to Firebase Auth
