@@ -260,7 +260,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       );
 
       _bc('verifyOtp: calling signInWithCredential');
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      // Timeout added as a safety net — if Firebase's native handshake here
+      // hangs/spins instead of returning cleanly (our leading theory for the
+      // repeated ~3GB memory blow-up on this exact call), this at least stops
+      // OUR code from waiting forever and surfaces a catchable error instead
+      // of the app going blank and dying.
+      await FirebaseAuth.instance
+          .signInWithCredential(credential)
+          .timeout(const Duration(seconds: 8));
       _bc('verifyOtp: signInWithCredential returned successfully');
 
       await _completeSuccessfulVerification();

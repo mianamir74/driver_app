@@ -37,15 +37,17 @@ import FirebaseAuth
     }
   }
 
-  // Forward APNs device token to Firebase Auth
-  // RESTORED to exact build-503 (ba4d859, last confirmed-working) form — the
-  // DispatchQueue.main.async wrapper and the .prod override added afterward
-  // were never actually validated against a working build (the crash never
-  // stopped after either was added), so they're being pulled back out to get
-  // a clean before/after test.
+  // Forward APNs device token to Firebase Auth.
+  // Switching to .prod (was .unknown, matching build 503). We've now confirmed
+  // build 503's exact code still fails at signInWithCredential with the
+  // Keychain issue removed as a variable (every-launch wipe, build 516) — so
+  // .unknown was never actually a "working" setting for THIS specific call,
+  // it just never got exercised far enough to prove it out before. Every
+  // build we ship is TestFlight/App Store, always production APNs — .prod
+  // removes Firebase's environment auto-detection from the equation entirely.
   override func application(_ application: UIApplication,
                              didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    Auth.auth().setAPNSToken(deviceToken, type: .prod)
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 
