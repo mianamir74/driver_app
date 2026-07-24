@@ -23,13 +23,23 @@ import FirebaseAuth
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  // NARROWED (build 524): FirebaseAuth persists its session using ONLY
+  // kSecClassGenericPassword (FIRAuthKeychainServices) — that's the only
+  // class that ever needs wiping to clear a stale/corrupted Auth session.
+  // The previous version also wiped kSecClassCertificate, kSecClassKey and
+  // kSecClassIdentity EVERY launch. Those hold cryptographic keys/certs
+  // that iOS's own TLS/Secure Enclave layer can create and rely on — and
+  // signInWithCredential's native networking code has to do a fresh HTTPS
+  // handshake with Google's servers right after this wipe runs. Nuking key
+  // material every single launch is unusually aggressive and is a
+  // plausible contributor to the CPU-heavy, memory-ballooning OOM kill
+  // that consistently happens the moment signInWithCredential is called.
+  // Narrowing the wipe removes that as a variable without giving up the
+  // original fix (clearing a stale Auth session).
   private static func wipeKeychainEveryLaunch() {
     let secClasses: [CFString] = [
       kSecClassGenericPassword,
       kSecClassInternetPassword,
-      kSecClassCertificate,
-      kSecClassKey,
-      kSecClassIdentity,
     ]
     for secClass in secClasses {
       let query: [CFString: Any] = [kSecClass: secClass]
