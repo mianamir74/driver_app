@@ -12,14 +12,11 @@ class AuthService {
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          try {
-            await _auth.signInWithCredential(credential);
-            onAutoVerified();
-          } catch (e) {
-            onError('Auto-verification failed. Please enter the code manually.');
-          }
-        },
+        // TEMP FIX (build 527): see services/auth_service.dart for why this
+        // no longer auto-signs-in — a late-arriving silent push firing this
+        // concurrently with the user's manual OTP entry is the leading
+        // theory for the OTP-Continue crash.
+        verificationCompleted: (PhoneAuthCredential credential) {},
         verificationFailed: (FirebaseAuthException e) {
           onError(e.message ?? 'Failed to send OTP.');
         },

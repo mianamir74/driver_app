@@ -192,64 +192,44 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     // Check if this is an existing user (forgot password / re-login)
     // or a brand new signup that still needs registration.
     //
-    // TEMP DIAGNOSTIC (build 523): builds 521/522 proved persistence-off and
-    // sequential-instead-of-parallel queries made no difference — the crash
-    // reappeared at the exact same point both times ("starting firestore
-    // lookups"). That means it isn't about HOW we query, it's Firestore's
-    // very first network call in this app session that's fatal, full stop.
-    // This build skips Firestore entirely here (isDriver/isCabDriver/
-    // isBusiness are hard-coded false, routing every sign-in as if brand new)
-    // to prove that conclusively:
-    //   - If build 523 does NOT crash -> 100% confirmed, Firestore's native
-    //     iOS SDK is the root cause. Next step is replacing this native
-    //     lookup with a Cloud Function/REST call that avoids the SDK.
-    //   - If build 523 STILL crashes with no Firestore touched at all ->
-    //     Firestore is innocent and something else near this point (likely
-    //     Auth's post-sign-in state write, or the navigation call itself)
-    //     is the real cause, and we start over on this file for suspects.
-    // MUST BE REVERTED before shipping — right now every sign-in, new or
-    // returning, gets routed as brand new (wrong home screen for existing
-    // users).
-    const bool kSkipFirestoreLookupDiagnostic = true;
+    // RESTORED (build 527): builds 521-523 conclusively cleared Firestore as
+    // a suspect (skipping it entirely still crashed at the same point) and
+    // build 527 fixes the real cause (a concurrent signInWithCredential race
+    // — see services/auth_service.dart), so the diagnostic bypass that
+    // misrouted every sign-in as brand-new is no longer needed and would
+    // have broken returning-user routing in production. Kept the sequential
+    // queries + per-call timeout from the bisection as a harmless permanent
+    // safety net.
+    _bc('completeVerification: starting firestore lookups');
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    bool isDriver = false;
-    bool isCabDriver = false;
-    bool isBusiness = false;
+    _bc('completeVerification: querying drivers');
+    final DocumentSnapshot<Map<String, dynamic>> driverResult = await firestore
+        .collection('drivers')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 6));
+    _bc('completeVerification: drivers query done');
 
-    if (kSkipFirestoreLookupDiagnostic) {
-      _bc('completeVerification: SKIPPING firestore lookups (diagnostic)');
-    } else {
-      _bc('completeVerification: starting firestore lookups');
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    _bc('completeVerification: querying cab_drivers');
+    final DocumentSnapshot<Map<String, dynamic>> cabDriverResult = await firestore
+        .collection('cab_drivers')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 6));
+    _bc('completeVerification: cab_drivers query done');
 
-      _bc('completeVerification: querying drivers');
-      final DocumentSnapshot<Map<String, dynamic>> driverResult = await firestore
-          .collection('drivers')
-          .doc(user.uid)
-          .get()
-          .timeout(const Duration(seconds: 6));
-      _bc('completeVerification: drivers query done');
+    _bc('completeVerification: querying businesses');
+    final DocumentSnapshot<Map<String, dynamic>> businessResult = await firestore
+        .collection('businesses')
+        .doc(user.uid)
+        .get()
+        .timeout(const Duration(seconds: 6));
+    _bc('completeVerification: firestore lookups done');
 
-      _bc('completeVerification: querying cab_drivers');
-      final DocumentSnapshot<Map<String, dynamic>> cabDriverResult = await firestore
-          .collection('cab_drivers')
-          .doc(user.uid)
-          .get()
-          .timeout(const Duration(seconds: 6));
-      _bc('completeVerification: cab_drivers query done');
-
-      _bc('completeVerification: querying businesses');
-      final DocumentSnapshot<Map<String, dynamic>> businessResult = await firestore
-          .collection('businesses')
-          .doc(user.uid)
-          .get()
-          .timeout(const Duration(seconds: 6));
-      _bc('completeVerification: firestore lookups done');
-
-      isDriver = driverResult.exists;
-      isCabDriver = cabDriverResult.exists;
-      isBusiness = businessResult.exists;
-    }
+    final bool isDriver = driverResult.exists;
+    final bool isCabDriver = cabDriverResult.exists;
+    final bool isBusiness = businessResult.exists;
 
     if (!mounted) return;
 
@@ -356,12 +336,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         phoneNumber: widget.phoneNumber,
         forceResendingToken: _resendToken,
         timeout: const Duration(seconds: 60),
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          try {
-            await FirebaseAuth.instance.signInWithCredential(credential);
-            await _completeSuccessfulVerification();
-          } catch (_) {}
-        },
+        // TEMP FIX (build 527): don't auto-sign-in on resend either — see
+        // services/auth_service.dart for why. Same race is possible here:
+        // user resends, then manually types the new code and hits Continue
+        // (_verifyOtp) while this callback is still alive in the background.
+        verificationCompleted: (PhoneAuthCredential credential) {},
         verificationFailed: (FirebaseAuthException e) async {
           if (!mounted) {
             return;

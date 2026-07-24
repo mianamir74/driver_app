@@ -2,78 +2,20 @@ import Flutter
 import UIKit
 import FirebaseAuth
 
-// MARK: - TEMP DIAGNOSTIC (build 526) — native crash capture, remove once we
-// have captured one report.
-//
-// Zero new reports have appeared in iOS's own Analytics Data after the last
-// clean-device OTP-Continue crash test — either "Share iPhone Analytics" is
-// off, or something is preventing the OS's own crash reporter from writing
-// one. This writes an independent log directly into the app's own Documents
-// folder, retrievable via the iPhone's Files app (On My iPhone > GoOuts Lead)
-// with NO dependency on Analytics Data, Crashlytics, or a Mac.
-//
-// IMPORTANT CAVEAT, so we read the result correctly either way: this can
-// only catch a genuine exception/signal (SIGABRT, SIGSEGV, SIGILL, SIGFPE,
-// SIGBUS, SIGTRAP). A kernel Jetsam OOM kill is delivered as SIGKILL, which
-// by POSIX design cannot be caught by ANY handler in ANY app — that's an OS
-// guarantee, not a gap in this code. So:
-//   - If last_native_crash.log appears after the next crash -> this was
-//     NEVER a Jetsam OOM kill, it's a real catchable exception, and we get
-//     an actual (if unsymbolicated) stack trace to work from.
-//   - If it does NOT appear -> either it's truly an uncatchable SIGKILL, or
-//     something is killing the app before this code even runs.
-private func gooutsCrashLogPath() -> URL? {
-  guard let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-    return nil
-  }
-  return dir.appendingPathComponent("last_native_crash.log")
-}
-
-private func gooutsWriteCrashLog(_ text: String) {
-  guard let path = gooutsCrashLogPath() else { return }
-  let stamped = "[\(Date())]\n\(text)\n"
-  try? stamped.write(to: path, atomically: true, encoding: .utf8)
-}
-
-private func gooutsUncaughtExceptionHandler(_ exception: NSException) {
-  let text = """
-  UNCAUGHT NSEXCEPTION
-  name: \(exception.name.rawValue)
-  reason: \(exception.reason ?? "nil")
-  userInfo: \(String(describing: exception.userInfo))
-  callStackSymbols:
-  \(exception.callStackSymbols.joined(separator: "\n"))
-  """
-  gooutsWriteCrashLog(text)
-}
-
-private func gooutsSignalHandler(_ sig: Int32) {
-  let text = """
-  UNCAUGHT SIGNAL
-  signal: \(sig)
-  callStackSymbols:
-  \(Thread.callStackSymbols.joined(separator: "\n"))
-  """
-  gooutsWriteCrashLog(text)
-  signal(sig, SIG_DFL)
-  raise(sig)
-}
-
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // TEMP DIAGNOSTIC (build 526): install native crash capture FIRST, before
-    // anything else has a chance to crash. See comment block above.
-    NSSetUncaughtExceptionHandler(gooutsUncaughtExceptionHandler)
-    signal(SIGABRT, gooutsSignalHandler)
-    signal(SIGILL, gooutsSignalHandler)
-    signal(SIGSEGV, gooutsSignalHandler)
-    signal(SIGFPE, gooutsSignalHandler)
-    signal(SIGBUS, gooutsSignalHandler)
-    signal(SIGTRAP, gooutsSignalHandler)
+    // REMOVED (build 527): build 526's native crash handler (SIGABRT/SIGSEGV/
+    // etc. + NSSetUncaughtExceptionHandler) confirmed conclusively that no
+    // catchable exception/signal ever fires — last_native_crash.log never
+    // appeared across repeated crashes, while JetsamEvent reports kept
+    // appearing. That's the answer it was built to get: this was a genuine
+    // uncatchable kernel SIGKILL, not a hidden catchable bug. Removed now
+    // that we have a real fix for the actual cause (concurrent
+    // signInWithCredential race, see services/auth_service.dart).
 
     // TEMPORARY DIAGNOSTIC: wipe Keychain on EVERY launch (not gated to once).
     // The one-time version wasn't enough — signing in during testing writes a

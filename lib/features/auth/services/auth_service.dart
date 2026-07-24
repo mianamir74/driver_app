@@ -14,14 +14,22 @@ class AuthService {
     try {
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          try {
-            await _auth.signInWithCredential(credential);
-            onAutoVerified();
-          } catch (e) {
-            onError('Auto-verification failed. Please enter the code manually.');
-          }
-        },
+        // TEMP FIX (build 527): DO NOT auto-sign-in here anymore.
+        // This callback stays alive in the background even after the user
+        // navigates to OtpVerificationScreen (LoginScreen's State is just
+        // buried under the pushed route, not disposed). If Firebase's
+        // silent-push auto-verification arrives late - common and exactly
+        // matches the variable 3-13s delay seen before every OTP-Continue
+        // crash - this fired a SECOND, concurrent signInWithCredential call
+        // at the same time as the user's own manual one on the OTP screen.
+        // Two simultaneous credential-exchange calls racing in Firebase's
+        // native iOS SDK is a known class of bug (matches upstream
+        // firebase-ios-sdk reports of concurrent auth RPCs causing native
+        // memory/lock blowups) and fits every symptom we've seen: always
+        // the same call, uncatchable by app code, reproducible every time.
+        // This app's UX always wants manual code entry anyway, so dropping
+        // the auto-verified credential here is zero downside.
+        verificationCompleted: (PhoneAuthCredential credential) {},
         verificationFailed: (FirebaseAuthException e) {
           onError(e.message ?? 'Failed to send OTP. Please try again.');
         },
