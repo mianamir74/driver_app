@@ -316,13 +316,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         'Failed to verify OTP.\n\n$e',
       );
     } finally {
-      if (!mounted) {
-        return;
+      // A `return` inside `finally` silently discards whatever the try/catch
+      // above was doing (a real Dart footgun, flagged by the analyzer) — use
+      // a plain `if (mounted)` guard instead of returning out of finally.
+      if (mounted) {
+        setState(() {
+          _isVerifying = false;
+        });
       }
-
-      setState(() {
-        _isVerifying = false;
-      });
     }
   }
 
@@ -390,13 +391,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         'Failed to resend OTP.\n\n$e',
       );
     } finally {
-      if (!mounted) {
-        return;
+      if (mounted) {
+        setState(() {
+          _isResending = false;
+        });
       }
-
-      setState(() {
-        _isResending = false;
-      });
     }
   }
 
