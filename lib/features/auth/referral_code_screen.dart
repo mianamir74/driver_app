@@ -516,7 +516,7 @@ class _ReferralCodeScreenState extends State<ReferralCodeScreen> {
   }
 }
 
-class _CodeInputBox extends StatelessWidget {
+class _CodeInputBox extends StatefulWidget {
   const _CodeInputBox({
     required this.controller,
     required this.focusNode,
@@ -540,26 +540,63 @@ class _CodeInputBox extends StatelessWidget {
   final VoidCallback? onBackspaceEmpty;
 
   @override
+  State<_CodeInputBox> createState() => _CodeInputBoxState();
+}
+
+class _CodeInputBoxState extends State<_CodeInputBox> {
+  // CRITICAL FIX: KeyboardListener must NOT share the TextField's FocusNode.
+  // A FocusNode can only be attached to one widget at a time. Previously the
+  // SAME node was passed to both the KeyboardListener and the TextField it
+  // wraps, so the two widgets continuously fought over registering/attaching
+  // it in the focus tree — each reattach fired a notification, which
+  // rebuilt, which reattached again, unbounded. Eight of these boxes are
+  // built at once on this screen, and the resulting runaway loop allocated
+  // multiple GB within seconds the instant this screen was pushed (right
+  // after OTP verification), which iOS then killed as an out-of-memory
+  // process. That kill is a kernel SIGKILL, which is why no Dart try/catch,
+  // no .timeout(), and no native signal handler could ever catch it.
+  //
+  // This node is used ONLY for key-event listening; skipTraversal keeps it
+  // out of tab order so it never steals focus from the TextField.
+  final FocusNode _keyEventFocusNode = FocusNode(
+    skipTraversal: true,
+    debugLabel: 'CodeInputBox key listener',
+  );
+
+  @override
+  void dispose() {
+    _keyEventFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final TextEditingController controller = widget.controller;
+    final FocusNode focusNode = widget.focusNode;
+    final bool readOnly = widget.readOnly;
+    final bool hasError = widget.hasError;
+    final String hintText = widget.hintText;
+    final VoidCallback? onBackspaceEmpty = widget.onBackspaceEmpty;
+
     return SizedBox(
       width: 40,
       height: 56,
       child: KeyboardListener(
-        focusNode: focusNode,
+        focusNode: _keyEventFocusNode,
         onKeyEvent: (KeyEvent event) {
           if (readOnly || onBackspaceEmpty == null) return;
           if (event is KeyDownEvent &&
               event.logicalKey == LogicalKeyboardKey.backspace &&
               controller.text.isEmpty) {
-            onBackspaceEmpty!();
+            onBackspaceEmpty();
           }
         },
         child: TextField(
         controller: controller,
         focusNode: focusNode,
         readOnly: readOnly,
-        onChanged: onChanged,
-        onSubmitted: onSubmitted,
+        onChanged: widget.onChanged,
+        onSubmitted: widget.onSubmitted,
         keyboardType: TextInputType.text,
         textCapitalization: TextCapitalization.characters,
         textAlign: TextAlign.center,
