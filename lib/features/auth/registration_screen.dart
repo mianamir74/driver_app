@@ -1,7 +1,10 @@
 import 'dart:io';
 import '../../services/address_lookup_service.dart';
+import '../../services/biometric_selfie_inspector.dart';
+import '../../services/document_quality_inspector.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -898,6 +901,93 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+  // ── Auto-KYC ───────────────────────────────────────────────────────────────
+  // Scores the captured selfie and identity document entirely on-device (no
+  // image ever leaves the phone for scoring), then hands the numeric scores to
+  // the kycAutoDecision Cloud Function, which applies the same thresholds used
+  // by the consumer app:
+  //   >= 0.85  -> AUTO_APPROVED  (GREEN)  — never reaches the admin queue
+  //   0.65-0.84 -> MANUAL_REVIEW (AMBER)  — admin reviews as before
+  //   <  0.65  -> AUTO_REJECTED  (RED)    — applicant asked to resubmit
+  //
+  // Deliberately swallows all errors: auto-KYC is an optimisation, never a
+  // gate. If anything fails the enrolment simply stays 'submitted' and is
+  // reviewed manually, exactly as it was before this existed.
+  Future<void> _runAutoKycDecision({required String uid}) async {
+    try {
+      // Selfie scores
+      Map<String, dynamic> selfieScores = <String, dynamic>{'overall': 0.75};
+      if (_selfieImage != null) {
+        final Map<String, dynamic> r =
+            await BiometricSelfieInspector().inspectSelfie(_selfieImage!.path);
+        if (r['isValid'] == true) {
+          selfieScores =
+              Map<String, dynamic>.from(r['scores'] as Map? ?? selfieScores);
+        } else {
+          // Failed a hard quality gate (too dark / blurry / unreadable) —
+          // report zeros so the engine routes it to reject or manual review.
+          selfieScores = <String, dynamic>{'overall': 0.0};
+        }
+      }
+
+      // Document scores. A driving licence has two sides — score both and
+      // take the WEAKER of the two, since an unreadable back is just as
+      // disqualifying as an unreadable front.
+      Map<String, dynamic> documentScores = <String, dynamic>{'overall': 0.75};
+      final DocumentQualityInspector docInspector = DocumentQualityInspector();
+
+      Future<Map<String, dynamic>?> scoreDoc(XFile? f) async {
+        if (f == null) return null;
+        final Map<String, dynamic> r = await docInspector.inspectDocument(f.path);
+        if (r['isValid'] == true) {
+          return Map<String, dynamic>.from(r['scores'] as Map? ?? <String, dynamic>{});
+        }
+        return <String, dynamic>{'overall': 0.0};
+      }
+
+      if (_requiresDrivingLicenceFrontAndBack()) {
+        final Map<String, dynamic>? front = await scoreDoc(_drivingLicenceFrontImage);
+        final Map<String, dynamic>? back = await scoreDoc(_drivingLicenceBackImage);
+        if (front != null && back != null) {
+          final double fo = (front['overall'] as num?)?.toDouble() ?? 0.0;
+          final double bo = (back['overall'] as num?)?.toDouble() ?? 0.0;
+          documentScores = fo <= bo ? front : back;
+        } else {
+          documentScores = front ?? back ?? documentScores;
+        }
+      } else {
+        documentScores = await scoreDoc(_passportImage) ?? documentScores;
+      }
+
+      // Profile completeness — the fields an admin would otherwise eyeball.
+      const double perField = 1.0 / 6.0;
+      double profileCompleteness = 0.0;
+      if (_firstNameController.text.trim().isNotEmpty) profileCompleteness += perField;
+      if (_surnameController.text.trim().isNotEmpty) profileCompleteness += perField;
+      if (_emailController.text.trim().isNotEmpty) profileCompleteness += perField;
+      if (_normalizedPostcode().isNotEmpty) profileCompleteness += perField;
+      if ((_selectedCity ?? '').trim().isNotEmpty) profileCompleteness += perField;
+      if ((_selectedVehicleType ?? '').trim().isNotEmpty) profileCompleteness += perField;
+      profileCompleteness = double.parse(profileCompleteness.clamp(0.0, 1.0).toStringAsFixed(4));
+
+      await FirebaseFunctions.instanceFor(region: 'europe-west1')
+          .httpsCallable('kycAutoDecision')
+          .call(<String, dynamic>{
+        'selfieScores': selfieScores,
+        'documentScores': documentScores,
+        'profileCompleteness': profileCompleteness,
+        // Tells the CF which collection to write back to. The consumer app
+        // omits this and defaults to 'users'.
+        'targetCollection': _firestoreDriverCollection,
+        'accountType': _isCabDriverAccount ? 'cab_driver' : 'driver',
+        'documentType':
+            _requiresDrivingLicenceFrontAndBack() ? 'driving_licence' : 'passport',
+      }).timeout(const Duration(seconds: 20));
+    } catch (_) {
+      // Silent by design — falls back to manual admin review.
+    }
+  }
+
   Future<void> _saveVerificationMetadata({
     required User currentUser,
     required String profilePhotoUrl,
@@ -1701,6 +1791,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         drivingLicenceFrontUrl: drivingLicenceFrontUrl,
         drivingLicenceBackUrl: drivingLicenceBackUrl,
       );
+
+      // Auto-KYC: score the captured images on-device and let the
+      // kycAutoDecision Cloud Function approve / reject / escalate. Never
+      // throws — a failure here just leaves the enrolment in the normal
+      // 'submitted' state for manual admin review.
+      await _runAutoKycDecision(uid: currentUser.uid);
+
       await _syncReferralInviteResolution(
         currentUser: currentUser,
         driver: driver,

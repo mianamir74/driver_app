@@ -15,6 +15,8 @@ dependencies:
   cloud_firestore: ^6.6.0
   firebase_messaging: ^16.0.0
   firebase_storage: ^13.0.0
+  cloud_functions: ^6.3.3
+  image: ^4.1.7 # on-device KYC quality scoring (selfie + ID document inspectors)
   go_router: ^17.1.0
   image_picker: ^1.2.1
   intl: ^0.20.2
