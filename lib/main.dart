@@ -571,10 +571,6 @@ class RoleSelectionScreen extends StatelessWidget {
   static const Color _businessOrange = Color(0xFFF97316);
   // static const Color _cabGreen = Color(0xFF22C55E); // reserved — uncomment when cab driver role is enabled
   static const String _selectedAccountTypeKey = 'selected_account_type';
-  static const String _driverIntroDontShowAgainKey =
-      'driver_intro_dont_show_again';
-  static const String _businessIntroDontShowAgainKey =
-      'business_intro_dont_show_again';
 
   Future<void> _openRoleIntro(
     BuildContext context,
@@ -584,25 +580,28 @@ class RoleSelectionScreen extends StatelessWidget {
     await prefs.setString(_selectedAccountTypeKey, accountType);
     await prefs.setString('pending_account_type', accountType);
 
-    final bool skipIntro = accountType == 'business'
-        ? prefs.getBool(_businessIntroDontShowAgainKey) == true
-        : accountType == 'cab_driver'
-            ? prefs.getBool('cab_driver_intro_dont_show_again') == true
-            : prefs.getBool(_driverIntroDontShowAgainKey) == true;
-
     if (!context.mounted) {
       return;
     }
 
+    // The intro slides now ALWAYS show during signup.
+    //
+    // Previously this checked a '<role>_intro_dont_show_again' flag, which the
+    // FINISH button on the last slide set silently — so the very first person
+    // to complete the intro on a device never saw it again, with no checkbox
+    // or any indication that FINISH meant "never show this again". On an
+    // enrolment app every applicant should see the intro, so the skip check is
+    // gone. Removing the check (rather than just not setting the flag) also
+    // un-sticks devices where the flag was already written during testing.
+    //
+    // The intro remains separately openable from the home-screen menu, which
+    // uses openedFromMenu: true and simply pops back — unaffected by this.
     Navigator.of(context).push(
       MaterialPageRoute(
         settings: RouteSettings(
           arguments: {'accountType': accountType},
         ),
-        builder: (_) =>
-            skipIntro
-                ? const LoginScreen()
-                : RoleIntroSlidesScreen(accountType: accountType),
+        builder: (_) => RoleIntroSlidesScreen(accountType: accountType),
       ),
     );
   }
@@ -822,10 +821,6 @@ class RoleIntroSlidesScreen extends StatefulWidget {
 
 class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
   static const Color _goOutsBlue = Color(0xFF0392CA);
-  static const String _driverIntroDontShowAgainKey =
-      'driver_intro_dont_show_again';
-  static const String _businessIntroDontShowAgainKey =
-      'business_intro_dont_show_again';
 
   static const List<String> _driverSlides = [
     'assets/intro/Become Partner_2.png',
@@ -904,19 +899,12 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
   );
 }
 
-  Future<void> _finishAndHideIntroNextTime() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    if (widget.accountType == 'business') {
-      await prefs.setBool(_businessIntroDontShowAgainKey, true);
-    } else if (widget.accountType == 'cab_driver') {
-      await prefs.setBool('cab_driver_intro_dont_show_again', true);
-    } else {
-      await prefs.setBool(_driverIntroDontShowAgainKey, true);
-    }
-
-    await _finishIntro();
-  }
+  // REMOVED: _finishAndHideIntroNextTime().
+  // The FINISH button used to call this, which silently wrote a
+  // '<role>_intro_dont_show_again' flag — so whoever completed the intro once
+  // on a device never saw it again, with nothing in the UI saying FINISH meant
+  // "never show this again". FINISH now simply finishes (_finishIntro), and
+  // _openRoleIntro no longer reads those flags at all.
 
   void _nextSlide() {
     if (_isLastSlide) {
@@ -975,7 +963,7 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
                 const SizedBox(width: 12),
               const Spacer(),
               TextButton.icon(
-                onPressed: _finishAndHideIntroNextTime,
+                onPressed: _finishIntro,
                 icon: const Text(
                   'FINISH',
                   style: TextStyle(
