@@ -725,17 +725,29 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.white, size: 18),
-          SizedBox(height: 10),
-          AutoSizeText(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
+          // Icon and count share one row — the number sits to the right of
+          // the icon rather than beneath it. That reclaims a whole line of
+          // height, so the label below has room to wrap on fewer lines and
+          // the three cards line up more evenly.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Flexible(
+                child: AutoSizeText(
+                  value,
+                  maxLines: 1,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 6),
           AutoSizeText(
             label,
             style: const TextStyle(
@@ -1046,7 +1058,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 child: _heroStatCard(
                   icon: Icons.group_outlined,
                   value: totalReferralsCount.toString(),
-                  label: 'Total Referral Details',
+                  label: 'Total Referrals',
                 ),
               ),
               const SizedBox(width: 10),
@@ -1233,14 +1245,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                 const DriverEarningsScreen(),
                               ),
                             ),
-                            _buildQuickActionCard(
-                              context: context,
-                              icon: Icons.share_outlined,
-                              title: 'My Referral Link',
-                              subtitle: 'Share your code and invite drivers',
-                              onTap: () =>
-                                  _openScreen(context, const ReferralLinkScreen()),
-                            ),
+                            // REMOVED 'My Referral Link' — it opened
+                            // ReferralLinkScreen, exactly the same destination
+                            // as 'Sign Up Drivers' above, so it was a duplicate.
+                            //
+                            // REMOVED 'Profile' — already reachable from the
+                            // menu ('My Profile'), so it was redundant here.
                             _buildQuickActionCard(
                               context: context,
                               icon: Icons.groups_rounded,
@@ -1249,16 +1259,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                   'See all joined referrals and their status',
                               onTap: () =>
                                   _openScreen(context, const ReferralListScreen()),
-                            ),
-                            _buildQuickActionCard(
-                              context: context,
-                              icon: Icons.person_outline_rounded,
-                              title: 'Profile',
-                              subtitle: 'See your details and selfie',
-                              onTap: () => _openScreen(
-                                context,
-                                const DriverProfileScreen(),
-                              ),
                             ),
                             StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance

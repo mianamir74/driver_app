@@ -13,6 +13,10 @@ plugins {
 }
 
 android {
+    // Left as com.goouts.driver_app ON PURPOSE. `namespace` is a build time
+    // detail that must keep matching the Kotlin package of MainActivity, and
+    // changing it would mean moving the source directory for no user visible
+    // gain. The identity that matters is `applicationId` below.
     namespace = "com.goouts.driver_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -27,8 +31,14 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID
-        applicationId = "com.goouts.driver_app"
+        // com.goouts.lead, matching iOS. Corrected 3 August 2026: this was
+        // com.goouts.driver_app while iOS was com.goouts.lead, so the same app
+        // had two identities. Safe to change because Android has never been
+        // released: no signing keystore, and CI only builds iOS TestFlight.
+        //
+        // After a Play release this would NOT have been safe. A changed
+        // applicationId is a new app that existing installs never receive.
+        applicationId = "com.goouts.lead"
 
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion

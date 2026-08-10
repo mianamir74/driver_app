@@ -46,25 +46,36 @@ class DefaultFirebaseOptions {
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
     authDomain: 'goouts-f16db.firebaseapp.com',
+    databaseURL: 'https://goouts-f16db-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'goouts-f16db.firebasestorage.app',
   );
 
-    static const FirebaseOptions ios = FirebaseOptions(
+  static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD0u_n7kV2uPuSKFjaqYOyEiioDR5Y5d9o',
     appId: '1:289872853637:ios:99e308b8f7b7eca55bc7ec',
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
+    databaseURL: 'https://goouts-f16db-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'goouts-f16db.firebasestorage.app',
-    // CLIENT_ID from GoogleService-Info.plist — REQUIRED for Firebase Phone
-    // Auth reCAPTCHA fallback on iOS. Without it the native SDK throws an
-    // NSException (instant crash) when verifyPhoneNumber falls back to web
-    // verification, because it cannot resolve the registered URL scheme.
+    // ── DO NOT let `flutterfire configure` overwrite the next line. ──
+    // It must be CLIENT_ID from ios/Runner/GoogleService-Info.plist,
+    // because Info.plist registers the matching REVERSED_CLIENT_ID as a
+    // URL scheme. Firebase Phone Auth uses that scheme for the reCAPTCHA
+    // web fallback; a clientId with no registered scheme throws an
+    // NSException and the app dies instantly (builds 12 and 22).
+    //
+    // On 10 Aug 2026 a regen had put the WEB client here
+    // (…b8os6ac5jf5gtqp66ukfllgebro2vrn3…). Restored.
+    //
+    // androidClientId is deliberately absent: com.goouts.lead has no
+    // android OAuth client, and the regen had pointed it at the
+    // CONSUMER app's client (com.goouts.app).
     iosClientId:
         '289872853637-hsn5qkb1g7fehvdelmc1rh18c847fame.apps.googleusercontent.com',
     iosBundleId: 'com.goouts.lead',
   );
 
-    static const FirebaseOptions macos = FirebaseOptions(
+  static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyD0u_n7kV2uPuSKFjaqYOyEiioDR5Y5d9o',
     appId: '1:289872853637:ios:99e308b8f7b7eca55bc7ec',
     messagingSenderId: '289872853637',
@@ -84,10 +95,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA8x5e2Qbm5ccOHnSc4RJpLNQ57Bo3y0sk',
-    appId: '1:289872853637:android:00607261d3b90f7b5bc7ec',
+    appId: '1:289872853637:android:1ec6cadf9d2ecb5a5bc7ec',
     messagingSenderId: '289872853637',
     projectId: 'goouts-f16db',
+    databaseURL: 'https://goouts-f16db-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'goouts-f16db.firebasestorage.app',
   );
-
 }

@@ -4,12 +4,12 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1
 
+    integrations:
+      app_store_connect: Codemagic Admin
+
     environment:
       flutter: stable
       xcode: latest
-      # ios_signing tells Codemagic to use the connected Developer Portal
-      # integration ("Codemagic Admin" key) to fetch the correct distribution
-      # certificate + App Store provisioning profile automatically.
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.goouts.lead

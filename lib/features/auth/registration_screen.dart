@@ -33,7 +33,10 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
 // 1) GB -> GB in business prefix checks.
 // 2) Driver defaults aligned to GD100001 and driver validation uses GD.
 // 3) Business registration navigates to BusinessHomeScreen.
-// 4) sentinvites -> sentinvites.
+// 4) sentinvites -> sent_invites.  <- this instruction was mangled and
+//    read as a no-op. The driver path in goouts_drapp was still writing
+//    to 'sentinvites' until 3 August 2026. Fixed there. Check here too
+//    if this app ever writes that subcollection.
 
 class RegistrationScreen extends StatefulWidget {
   final String referralCode;
