@@ -58,7 +58,7 @@ class _PreAuthSupportSheetState extends State<_PreAuthSupportSheet> {
 
   String get _sourceCollection {
     switch (widget.accountType) {
-      case 'business':   return 'businesses';
+      case 'business':   return 'lead_partners';
       case 'cab_driver': return 'cab_drivers';
       default:           return 'drivers';
     }

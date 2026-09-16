@@ -90,10 +90,10 @@ class _ReferralDevTesterScreenState extends State<ReferralDevTesterScreen> {
     final results = await Future.wait([
       firestore.collection('drivers').doc(uid).get(),
       firestore.collection('cab_drivers').doc(uid).get(),
-      firestore.collection('businesses').doc(uid).get(),
+      firestore.collection('lead_partners').doc(uid).get(),
     ]);
     if (results[1].exists) return 'cab_drivers';
-    if (results[2].exists) return 'businesses';
+    if (results[2].exists) return 'lead_partners';
     return 'drivers';
   }
 

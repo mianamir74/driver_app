@@ -10,6 +10,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../services/image_orientation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../home/business_home_screen.dart';
 import '../home/driver_home_screen.dart';
@@ -27,6 +29,7 @@ import 'widgets/vehicle_info_section.dart';
 import '../legal/terms_and_conditions_screen.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
+import '../../screens/liveness_selfie_screen.dart';
 
 // NOTE:
 // This file is the user-requested updated copy of file:965 with these 4 changes:
@@ -139,6 +142,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   ];
 
   XFile? _selfieImage;
+
+  /// What the phone thought of the selfie, and whether the head-sweep finished.
+  ///
+  /// ⚠ ADVISORY ONLY. Client-written and trivially forgeable, so nothing
+  /// automated may key off them. They exist so a reviewer opening the
+  /// photograph knows whether the device was happy with it.
+  bool _livenessComplete = false;
+  String _livenessNote = '';
+  String? _selfieAdvice;
+  Map<String, dynamic>? _selfieScores;
   XFile? _drivingLicenceFrontImage;
   XFile? _drivingLicenceBackImage;
   XFile? _passportImage;
@@ -439,17 +452,65 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       setState(() {
         _isPickingSelfie = true;
       });
-      final XFile? pickedImage = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front,
-        imageQuality: 85,
-        maxWidth: 1200,
-      );
+      // ── ⚠ THE LIVE CAMERA REPLACED image_picker HERE, 24 August 2026 ───────
+      //
+      // What was here: pickImage(source: camera), which hands the job to the
+      // phone's own camera app. You get one finished photograph and no say in
+      // it — no guidance while the applicant frames themselves, nothing to
+      // check before the shutter, and no frames at all with which to watch a
+      // head turn and know the face is a real one.
+      //
+      // Everything below it existed to cope with that: normalise the rotation
+      // the picker destroyed, then judge the photo AFTER the fact and tell
+      // somebody "retake" with nothing to aim at. Applicants asked to retake
+      // are far likelier to abandon the application than to succeed second
+      // time, so that path cost more than it ever caught.
+      //
+      // LivenessSelfieScreen runs the same checks on the LIVE PREVIEW, guides
+      // while it can still be acted on, watches the head turn, and fires the
+      // shutter itself once the framing already passes. The photograph then
+      // passes by construction, because the gate that takes it is the code
+      // that validates it.
+      //
+      // ⚠ IT RETURNS THE FINISHED ARTICLE — already upright, downscaled and
+      // inspected. Do NOT re-run normaliseOrientation or BiometricSelfieInspector
+      // here. A second re-encode of an already compressed JPEG is where a face
+      // turns mushy, and it would buy no new information.
+      //
+      // ⚠ THE BLOCKING BRANCH IS GONE ON PURPOSE. That screen will not hand
+      // back a photograph with no usable face in it — it keeps scanning
+      // instead of returning — so there is nothing left here to refuse.
+      final LivenessSelfieResult? shot =
+          await LivenessSelfieScreen.open(context);
       if (!mounted) return;
-      if (pickedImage != null) {
+
+      // null means they backed out without taking one. Nothing happened, and
+      // nothing should be said about it.
+      if (shot != null) {
+        // Imperfect but usable. Say so once, then carry on — they are not
+        // being asked to do anything about it.
+        if (shot.advice != null) {
+          await GoOutsSheet.warning(
+            context,
+            title: 'Selfie saved',
+            message: '${shot.advice}'
+                '\n\nWe have kept it and it will go for review. You can '
+                'retake it now if you would rather.',
+          );
+          if (!mounted) return;
+        }
+
         setState(() {
-          _selfieImage = pickedImage;
+          _selfieImage = XFile(shot.path);
           _showSelfieError = false;
+          // ⚠ ADVISORY, NEVER A DECISION — client-written and trivially
+          // forged. false means the head-sweep ran out of time and the photo
+          // was taken anyway, which tells a reviewer to look harder. It is not
+          // a rejection: the app assists, the admin judges.
+          _livenessComplete = shot.livenessComplete;
+          _livenessNote = shot.livenessNote;
+          _selfieAdvice = shot.advice;
+          _selfieScores = Map<String, dynamic>.from(shot.scores);
         });
       }
     } catch (e) {
@@ -559,7 +620,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Future<XFile?> _pickDocumentImage({required String dialogTitle}) async {
     final ImageSource? source = await _showDocumentSourceDialog(dialogTitle);
     if (source == null) return null;
-    return _imagePicker.pickImage(source: source, imageQuality: 90, maxWidth: 1800);
+    // ⚠ NO imageQuality / maxWidth — the re-encode drops the EXIF orientation
+    // without rotating the pixels, and a sideways ID fails the aspect-ratio
+    // check, which measures the wrong dimension on a rotated card.
+    final XFile? picked = await _imagePicker.pickImage(source: source);
+    if (picked == null) return null;
+
+    // Normalised HERE rather than in each of the three callers — driving
+    // licence front, licence back and passport all come through this method,
+    // and one of them would eventually be missed.
+    return XFile(await normaliseOrientation(picked.path));
   }
 
   Future<void> _pickDrivingLicenceFront() async {
@@ -657,7 +727,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<String> _uploadSelfie({required String uid, required XFile selfieImage}) async {
-    final String folder = _isBusinessAccount ? 'businesses' : _firestoreDriverCollection;
+    final String folder = _isBusinessAccount ? 'lead_partners' : _firestoreDriverCollection;
     final Reference ref = FirebaseStorage.instance
         .ref()
         .child(folder)
@@ -1005,6 +1075,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final Map<String, dynamic> payload = <String, dynamic>{
       'profilePhotoUrl': profilePhotoUrl,
       'selfieUrl': profilePhotoUrl,
+      // ⚠ ADVISORY, NEVER A DECISION. Client-written and trivially forged, so
+      // nothing automated may key off them. livenessComplete false means the
+      // head-sweep ran out of time and the photo was taken anyway — a note
+      // telling a reviewer to look harder, NOT a rejection.
+      'livenessComplete': _livenessComplete,
+      if (_livenessNote.isNotEmpty) 'livenessNote': _livenessNote,
+      if (_selfieAdvice != null) 'selfieAdvice': _selfieAdvice,
+      if (_selfieScores != null) 'selfieScores': _selfieScores,
       'identityVerificationStatus': 'submitted',
       'identityVerificationBackendStatus': 'submitted',
       'identityVerificationFailureCount': 0,
@@ -1330,7 +1408,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (inviterUid.isNotEmpty && inviteId.isNotEmpty) {
         batch.set(
           FirebaseFirestore.instance
-              .collection('businesses')
+              .collection('lead_partners')
               .doc(inviterUid)
               .collection('sent_invites')
               .doc(inviteId),
@@ -1342,7 +1420,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     batch.set(
       FirebaseFirestore.instance
-          .collection('businesses')
+          .collection('lead_partners')
           .doc(currentUser.uid),
       <String, dynamic>{
         'updatedAt': FieldValue.serverTimestamp(),
@@ -1512,6 +1590,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         'referralCode': ownReferralCode,
         'profilePhotoUrl': profilePhotoUrl,
         'selfieUrl': profilePhotoUrl,
+        // Same advisory fields as the driver path above. This is the business
+        // partner branch of the same screen and it writes a different map, so
+        // omitting them here would leave business applications with no record
+        // of what the phone thought — the drift this codebase keeps paying for.
+        'livenessComplete': _livenessComplete,
+        if (_livenessNote.isNotEmpty) 'livenessNote': _livenessNote,
+        if (_selfieAdvice != null) 'selfieAdvice': _selfieAdvice,
+        if (_selfieScores != null) 'selfieScores': _selfieScores,
         'businessProfileVerificationStatus': 'submitted',
         'businessProfileVerificationBackendStatus': 'submitted',
         'businessProfileVerificationSubmittedAt': FieldValue.serverTimestamp(),
@@ -1525,7 +1611,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       }
 
       await FirebaseFirestore.instance
-          .collection('businesses')
+          .collection('lead_partners')
           .doc(currentUser.uid)
           .set(businessData, SetOptions(merge: true));
 

@@ -35,13 +35,26 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
   User? get _user => FirebaseAuth.instance.currentUser;
 
   bool _isLoading = true;
-  String _displayName = 'Business Partner';
+  String _displayName = 'Lead Partner';
   String _referralCode = 'BG0001';
   String _accountStatus = '';
   int _unreadMessagesCount = 0;
   int _referralActivityCount = 0;
   int _totalReferralsCount = 0;
   DateTime? _lastViewedAt;
+
+  // ⚠ ADDED 9 September 2026. index.js's "Residual Income" trigger (see
+  // that file's own comment header) has been crediting these four fields
+  // onto lead_partners/{uid} for real, on every completed food order referred
+  // by this Lead Partner — driverResidualEarned, merchantResidualEarned,
+  // residualTotal, pendingPayout — since 8 September 2026, but nothing in
+  // this app ever displayed them. A Lead Partner earning real residual
+  // money had no way to see it. No payout action here — GoOuts standing
+  // rule is never build a payout function — this is read-only display.
+  double _residualTotal = 0;
+  double _pendingPayout = 0;
+  double _driverResidualEarned = 0;
+  double _merchantResidualEarned = 0;
 
   @override
   void initState() {
@@ -68,7 +81,7 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
       final DocumentSnapshot<Map<String, dynamic>> businessDoc =
-          await firestore.collection('businesses').doc(user.uid).get();
+          await firestore.collection('lead_partners').doc(user.uid).get();
       final Map<String, dynamic> businessData =
           businessDoc.data() ?? <String, dynamic>{};
 
@@ -86,8 +99,15 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
       _lastViewedAt =
           _readDateTime(businessData, const ['lastReferralActivityViewedAt']);
 
+      _residualTotal = (businessData['residualTotal'] ?? 0).toDouble();
+      _pendingPayout = (businessData['pendingPayout'] ?? 0).toDouble();
+      _driverResidualEarned =
+          (businessData['driverResidualEarned'] ?? 0).toDouble();
+      _merchantResidualEarned =
+          (businessData['merchantResidualEarned'] ?? 0).toDouble();
+
       final QuerySnapshot<Map<String, dynamic>> messagesSnapshot = await firestore
-          .collection('businesses')
+          .collection('lead_partners')
           .doc(user.uid)
           .collection('messages')
           .orderBy('createdAt', descending: true)
@@ -95,7 +115,7 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
       _unreadMessagesCount = _getUnreadMessagesCount(messagesSnapshot.docs);
 
       final QuerySnapshot<Map<String, dynamic>> referralsSnapshot = await firestore
-          .collection('businesses')
+          .collection('lead_partners')
           .doc(user.uid)
           .collection('sent_invites')
           .orderBy('sentAt', descending: true)
@@ -234,7 +254,7 @@ class _BusinessHomeScreenState extends State<BusinessHomeScreen> {
                     context,
                     const HelpSupportScreen(
                       accountType: 'business',
-                      collectionName: 'businesses',
+                      collectionName: 'lead_partners',
                     ),
                   );
                 },
@@ -362,7 +382,7 @@ Widget _menuTile({
     final String legalBusinessName =
         _titleCase((data?['legalBusinessName'] ?? '').toString());
     if (legalBusinessName.isNotEmpty) return legalBusinessName;
-    return user.phoneNumber ?? 'Business Partner';
+    return user.phoneNumber ?? 'Lead Partner';
   }
 
   int _getUnreadMessagesCount(
@@ -650,6 +670,167 @@ Widget _menuTile({
     );
   }
 
+  // ⚠ ADDED 9 September 2026 alongside the state fields above. Read-only —
+  // shows real money already credited by index.js's Residual Income
+  // trigger. "Pending Payout" is exactly that: accrued but not yet paid
+  // out. No button here initiates a transfer (GoOuts standing rule: never
+  // build a payout function) — a partner who wants to be paid contacts
+  // GoOuts directly until a real payout flow is designed and approved.
+  Widget _residualCard({
+    required double residualTotal,
+    required double pendingPayout,
+    required double driverResidualEarned,
+    required double merchantResidualEarned,
+  }) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: _softBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                clipBehavior: Clip.antiAlias,
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: _softBlueTint,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.savings_outlined, color: _goOutsBlue),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: AutoSizeText(
+                  'Residual Income',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: _textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AutoSizeText('Total Earned',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _textSecondary)),
+                    const SizedBox(height: 4),
+                    AutoSizeText(
+                      '£${residualTotal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: _textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 34, color: _softBorder),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AutoSizeText('Pending Payout',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _textSecondary)),
+                    const SizedBox(height: 4),
+                    AutoSizeText(
+                      '£${pendingPayout.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: _goOutsBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _softBlueTint,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const AutoSizeText('Driver referrals',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: _textSecondary)),
+                      const SizedBox(height: 2),
+                      AutoSizeText(
+                        '£${driverResidualEarned.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: _textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const AutoSizeText('Merchant referrals',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: _textSecondary)),
+                      const SizedBox(height: 2),
+                      AutoSizeText(
+                        '£${merchantResidualEarned.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: _textPrimary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          const AutoSizeText(
+            'Earned from orders placed by drivers and restaurants you referred. Contact GoOuts to arrange payout.',
+            style: TextStyle(
+                fontSize: 11, color: _textSecondary, height: 1.35),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _actionCard({
     required BuildContext context,
     required String title,
@@ -751,7 +932,7 @@ Widget _menuTile({
         scrolledUnderElevation: 0,
         centerTitle: true,
         title: AutoSizeText(
-          'GoOuts Business Partner',
+          'GoOuts Lead Partner',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -784,6 +965,13 @@ Widget _menuTile({
                       referralActivityCount: _referralActivityCount,
                       totalReferralsCount: _totalReferralsCount,
                       accountStatus: _accountStatus,
+                    ),
+                    const SizedBox(height: 24),
+                    _residualCard(
+                      residualTotal: _residualTotal,
+                      pendingPayout: _pendingPayout,
+                      driverResidualEarned: _driverResidualEarned,
+                      merchantResidualEarned: _merchantResidualEarned,
                     ),
                     const SizedBox(height: 24),
                     Container(

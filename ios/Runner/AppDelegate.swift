@@ -17,43 +17,19 @@ import FirebaseAuth
     // that we have a real fix for the actual cause (concurrent
     // signInWithCredential race, see services/auth_service.dart).
 
-    // TEMPORARY DIAGNOSTIC: wipe Keychain on EVERY launch (not gated to once).
-    // The one-time version wasn't enough — signing in during testing writes a
-    // brand-new session to Keychain, and THAT session hits the same crash on
-    // the next cold launch, re-trapping the test device. Wiping every launch
-    // keeps the device testable while we chase the real fix. This must be
-    // reverted to one-time (or removed) before shipping to real users —
-    // it currently signs everyone out on every app open.
-    Self.wipeKeychainEveryLaunch()
+    // REMOVED (see lib/features/auth/services/auth_service.dart): the
+    // every-launch Keychain wipe was a temporary diagnostic to keep test
+    // devices usable while chasing the OTP-Continue crash. The real cause
+    // (a late silent-push auto-verification racing the user's manual
+    // signInWithCredential call) is now fixed at the source — the auto
+    // credential is dropped instead of raced. Wiping Keychain on every
+    // launch signed every user out on every app open, which was never
+    // acceptable for real users; safe to remove now the actual bug is fixed.
 
     GeneratedPluginRegistrant.register(with: self)
     // Register for remote notifications so Firebase Phone Auth can use APNs
     application.registerForRemoteNotifications()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
-
-  // NARROWED (build 524): FirebaseAuth persists its session using ONLY
-  // kSecClassGenericPassword (FIRAuthKeychainServices) — that's the only
-  // class that ever needs wiping to clear a stale/corrupted Auth session.
-  // The previous version also wiped kSecClassCertificate, kSecClassKey and
-  // kSecClassIdentity EVERY launch. Those hold cryptographic keys/certs
-  // that iOS's own TLS/Secure Enclave layer can create and rely on — and
-  // signInWithCredential's native networking code has to do a fresh HTTPS
-  // handshake with Google's servers right after this wipe runs. Nuking key
-  // material every single launch is unusually aggressive and is a
-  // plausible contributor to the CPU-heavy, memory-ballooning OOM kill
-  // that consistently happens the moment signInWithCredential is called.
-  // Narrowing the wipe removes that as a variable without giving up the
-  // original fix (clearing a stale Auth session).
-  private static func wipeKeychainEveryLaunch() {
-    let secClasses: [CFString] = [
-      kSecClassGenericPassword,
-      kSecClassInternetPassword,
-    ]
-    for secClass in secClasses {
-      let query: [CFString: Any] = [kSecClass: secClass]
-      SecItemDelete(query as CFDictionary)
-    }
   }
 
   // Forward APNs device token to Firebase Auth.

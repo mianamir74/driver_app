@@ -8,6 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
+// image_orientation is no longer imported here — normaliseOrientation now runs
+// inside LivenessSelfieScreen, on the frame it captured, before it hands the
+// path back.
+import '../../screens/liveness_selfie_screen.dart';
+
 import '../home/business_home_screen.dart';
 import '../legal/terms_and_conditions_screen.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -38,7 +43,11 @@ class _BusinessRegistrationScreenState
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AddressLookupService _addressService = AddressLookupService();
-  final ImagePicker _imagePicker = ImagePicker();
+  // ⚠ THE ImagePicker FIELD WAS REMOVED 24 August 2026. The selfie now comes
+  // from LivenessSelfieScreen, which owns its own camera. The image_picker
+  // import stays because XFile comes from it and _selfieImage is still an
+  // XFile — dropping that import breaks the build in a way that reads as
+  // unrelated to this change.
 
   final List<String> _prefixOptions = <String>['Mr', 'Mrs', 'Miss', 'Ms', 'Dr'];
   final List<String> _countryOptions = <String>[
@@ -128,11 +137,46 @@ class _BusinessRegistrationScreenState
   double? _verifiedLongitude;
   // Locked only when address was actually auto-filled from OS bottom sheet.
   bool _addressFieldsLocked = false;
+
+  /// True when the applicant gave up on the lookup and typed their address in
+  /// by hand.
+  ///
+  /// ── WHY THIS EXISTS ────────────────────────────────────────────────────
+  ///
+  /// 14 August 2026, reported as: "postcode lookup says address not found, so
+  /// I enter it manually, and then it always says enter postcode even though
+  /// it IS entered."
+  ///
+  /// It was a dead end and it was not subtle. "Enter manually" cleared
+  /// _isPostcodeVerified so the fields became editable — and the submit guard
+  /// hard-required _isPostcodeVerified == true. So choosing manual entry made
+  /// the form permanently unsubmittable, and the error pointed at the postcode
+  /// box, which was full. Nothing the applicant typed could ever satisfy it.
+  ///
+  /// Anyone whose address Mapbox does not know — a new build, a flat
+  /// subdivision, a rural address — could not register at all.
+  ///
+  /// The address is still recorded as UNVERIFIED (postcodeVerified: false), so
+  /// an admin can see it was hand-typed. That is the honest outcome: let them
+  /// through, and mark how they got in.
+  bool _manualAddressEntry = false;
   List<MapboxSuggestResult> _addressSuggestions = [];
   String _mapboxSessionToken = AddressLookupService.generateSessionToken();
   bool _isLookingUpAddress = false;
 
   XFile? _selfieImage;
+
+  /// What the phone thought of the selfie, and whether the head-sweep finished.
+  ///
+  /// ⚠ ADVISORY ONLY. Client-written, trivially forgeable, so nothing automated
+  /// may key off them. They exist so a reviewer opening the photograph knows
+  /// whether the device was happy with it — the difference between a considered
+  /// approval and a blind one. Until 24 August 2026 this screen stored no
+  /// opinion of any kind, because it ran no check of any kind.
+  bool _livenessComplete = false;
+  String _livenessNote = '';
+  String? _selfieAdvice;
+  Map<String, dynamic>? _selfieScores;
 
   @override
   void initState() {
@@ -279,21 +323,42 @@ class _BusinessRegistrationScreenState
         _isPickingSelfie = true;
       });
 
-      final XFile? pickedImage = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front,
-        imageQuality: 85,
-        maxWidth: 1200,
-      );
+      // ── ⚠ THE LIVE CAMERA REPLACED image_picker HERE, 24 August 2026 ───────
+      //
+      // And it closed a real hole while it was at it. The note that used to sit
+      // below said, correctly, that THIS SCREEN RAN NO FACE CHECK AT ALL — it
+      // stored whatever the camera returned. A photograph of a wall, a shoe or
+      // the ceiling was accepted as a business partner's identity selfie and
+      // only discovered when an admin opened it days later.
+      //
+      // LivenessSelfieScreen will not hand back a photograph with no usable
+      // face in it: it keeps scanning instead of returning. So this screen now
+      // gets the same standard as the consumer app without a line of checking
+      // code of its own.
+      //
+      // ⚠ IT RETURNS THE FINISHED ARTICLE — already upright, downscaled and
+      // inspected. Do NOT re-run normaliseOrientation or the inspector here.
+      final LivenessSelfieResult? shot =
+          await LivenessSelfieScreen.open(context);
 
       if (!mounted) {
         return;
       }
 
-      if (pickedImage != null) {
+      // null means they backed out without taking one. Nothing happened, and
+      // nothing should be said about it.
+      if (shot != null) {
         setState(() {
-          _selfieImage = pickedImage;
+          _selfieImage = XFile(shot.path);
           _showSelfieError = false;
+          // ⚠ ADVISORY, NEVER A DECISION — written by the client and trivial
+          // to forge. false means the head-sweep ran out of time and the photo
+          // was taken anyway, which tells a reviewer to look harder. It is not
+          // a rejection: the app assists, the admin judges.
+          _livenessComplete = shot.livenessComplete;
+          _livenessNote = shot.livenessNote;
+          _selfieAdvice = shot.advice;
+          _selfieScores = Map<String, dynamic>.from(shot.scores);
         });
       }
     } catch (e) {
@@ -331,7 +396,7 @@ class _BusinessRegistrationScreenState
   }) async {
     final Reference ref = FirebaseStorage.instance
         .ref()
-        .child('businesses')
+        .child('lead_partners')
         .child('selfies')
         .child('$uid.jpg');
     await ref.putFile(File(selfieImage.path));
@@ -501,6 +566,9 @@ class _BusinessRegistrationScreenState
       _verifiedLatitude = null;
       _verifiedLongitude = null;
       _addressFieldsLocked = false;
+      // Unlocks the submit guard. Without this the fields become editable and
+      // the form still refuses to accept them.
+      _manualAddressEntry = true;
     });
     _showSnackBarMessage(
       'Address fields are now editable. Re-tap "Find Official Address" to re-verify.',
@@ -621,9 +689,31 @@ class _BusinessRegistrationScreenState
       return;
     }
 
-    if (!_isPostcodeVerified) {
-      _showSnackBarMessage('Please confirm your postcode before continuing.');
+    // Verified by lookup, OR typed by hand after the lookup failed. The form
+    // validator has already checked the postcode is a valid UK format; this
+    // only decides whether it also had to be CONFIRMED against Mapbox.
+    if (!_isPostcodeVerified && !_manualAddressEntry) {
+      _showSnackBarMessage(
+        'Tap "Look Up Address" to confirm your postcode, or use '
+        '"Enter manually" if your address is not found.',
+      );
       return;
+    }
+
+    // Manual entry still needs the fields actually filled in — the lookup
+    // normally populates these, and nothing else would catch them being blank.
+    if (_manualAddressEntry) {
+      if (_postcodeController.text.trim().isEmpty) {
+        _showSnackBarMessage('Please enter your postcode.');
+        return;
+      }
+      if (_roadNameController.text.trim().isEmpty ||
+          _townController.text.trim().isEmpty) {
+        _showSnackBarMessage(
+          'Please enter your street and town.',
+        );
+        return;
+      }
     }
 
     if (_selectedCountry == null || _selectedCountry!.trim().isEmpty) {
@@ -717,6 +807,10 @@ class _BusinessRegistrationScreenState
         'postcodeVerified': _isPostcodeVerified,
         'postcodeVerificationProvider':
             _isPostcodeVerified ? 'os_mapbox_hybrid' : '',
+        // Flags a hand-typed address for the admin reviewer. An unverified
+        // address is acceptable; an unverified address nobody KNOWS is
+        // unverified is not.
+        'addressEnteredManually': _manualAddressEntry,
         'addressUprn': _verifiedUprn,
         'addressFull': _verifiedFullAddress,
         'addressLatitude': _verifiedLatitude,
@@ -733,6 +827,19 @@ class _BusinessRegistrationScreenState
         'referralCode': ownReferralCode,
         'profilePhotoUrl': profilePhotoUrl,
         'selfieUrl': profilePhotoUrl,
+        // ── WHAT THE PHONE THOUGHT OF THE SELFIE ──────────────────────────
+        //
+        // New on 24 August 2026 — this screen previously stored a photograph
+        // with no opinion attached, because it ran no check at all.
+        //
+        // ⚠ ADVISORY, NEVER A DECISION. Client-written and trivially forged,
+        // so nothing automated may key off them. livenessComplete false means
+        // the head-sweep ran out of time and the photo was taken anyway; that
+        // is a note telling a reviewer to look harder, NOT a rejection.
+        'livenessComplete': _livenessComplete,
+        if (_livenessNote.isNotEmpty) 'livenessNote': _livenessNote,
+        if (_selfieAdvice != null) 'selfieAdvice': _selfieAdvice,
+        if (_selfieScores != null) 'selfieScores': _selfieScores,
         'businessProfileVerificationStatus': 'submitted',
         'businessProfileVerificationBackendStatus': 'submitted',
         'businessProfileVerificationSubmittedAt': FieldValue.serverTimestamp(),
@@ -747,7 +854,7 @@ class _BusinessRegistrationScreenState
       }
 
       await FirebaseFirestore.instance
-          .collection('businesses')
+          .collection('lead_partners')
           .doc(currentUser.uid)
           .set(businessData, SetOptions(merge: true));
 
@@ -990,7 +1097,7 @@ class _BusinessRegistrationScreenState
             padding: const EdgeInsets.all(18),
             children: <Widget>[
               _buildSectionCard(
-                title: 'Business Partner Details',
+                title: 'Lead Partner Details',
                 subtitle: 'Complete your business registration details below.',
                 children: <Widget>[
                   DropdownButtonFormField<String>(

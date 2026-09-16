@@ -134,7 +134,7 @@ class BusinessModel {
     if (fullName.trim().isNotEmpty) return fullName.trim();
     if (contactPersonName.trim().isNotEmpty) return contactPersonName.trim();
     if (legalBusinessName.trim().isNotEmpty) return legalBusinessName.trim();
-    return 'Business Partner';
+    return 'Lead Partner';
   }
 
   Map<String, dynamic> toFirestore() {

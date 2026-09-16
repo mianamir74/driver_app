@@ -61,12 +61,12 @@ class _BusinessReferralListScreenState extends State<BusinessReferralListScreen>
     }
 
     final DocumentSnapshot<Map<String, dynamic>> businessDoc =
-        await firestore.collection('businesses').doc(currentUser.uid).get();
+        await firestore.collection('lead_partners').doc(currentUser.uid).get();
 
     if (businessDoc.exists) {
       return _CurrentAccount(
         uid: currentUser.uid,
-        collection: 'businesses',
+        collection: 'lead_partners',
         isBusiness: true,
       );
     }

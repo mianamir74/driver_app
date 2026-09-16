@@ -45,12 +45,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   bool _hasNavigated = false; // guard against double navigation (verificationCompleted + manual OTP race)
   String _accountType = 'driver';
 
-  // Visible on-screen status — shows exactly which step is running right now.
-  // Two Jetsam memory-kill logs on this exact flow gave no stack trace, and
-  // Crashlytics is currently blocked on a dSYM upload, so this is the fastest
-  // way to see (with your own eyes) which step the app reaches before it dies.
-  String _statusText = '';
-
   @override
   void initState() {
     super.initState();
@@ -151,20 +145,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   String _accountTypeText() {
     return _accountType == 'business'
-        ? 'Business Partner'
+        ? 'Lead Partner'
         : 'Driver';
   }
 
-  // Breadcrumbs — written to disk immediately by Crashlytics (for later), AND
-  // shown on screen right now (for immediate visual confirmation of exactly
-  // which step the app reaches before it dies — no logs or console needed).
+  // Breadcrumbs — written to Crashlytics so a failed verification can be
+  // traced to the exact step afterwards. No longer shown on screen (that
+  // was a dev-only debug box); check Crashlytics logs to diagnose.
   void _bc(String step) {
     FirebaseCrashlytics.instance.log('OTP-VERIFY: $step');
-    if (mounted) {
-      setState(() {
-        _statusText = step;
-      });
-    }
   }
 
   Future<void> _completeSuccessfulVerification() async {
@@ -219,9 +208,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         .timeout(const Duration(seconds: 6));
     _bc('completeVerification: cab_drivers query done');
 
-    _bc('completeVerification: querying businesses');
+    _bc('completeVerification: querying lead_partners');
     final DocumentSnapshot<Map<String, dynamic>> businessResult = await firestore
-        .collection('businesses')
+        .collection('lead_partners')
         .doc(user.uid)
         .get()
         .timeout(const Duration(seconds: 6));
@@ -554,26 +543,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                 ),
               ),
-              if (_isVerifying && _statusText.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.amber.shade200),
-                  ),
-                  child: Text(
-                    'DEBUG STEP: $_statusText',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-              ],
+              // Step breadcrumbs still go to Crashlytics (see _bc()) for
+              // real diagnosis if verification fails — just not shown to
+              // the user on screen any more, this box was dev-only.
               const SizedBox(height: 16),
               TextButton(
                 onPressed: _isResending || _isVerifying ? null : _resendCode,

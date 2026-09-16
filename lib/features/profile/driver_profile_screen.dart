@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import '../legal/terms_and_conditions_screen.dart';
+import '../../utils/kyc_status.dart';
 
 class DriverProfileScreen extends StatefulWidget {
   const DriverProfileScreen({super.key});
@@ -33,7 +34,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     final Future<DocumentSnapshot<Map<String, dynamic>>> driverFuture =
         firestore.collection('drivers').doc(currentUser.uid).get();
     final Future<DocumentSnapshot<Map<String, dynamic>>> businessFuture =
-        firestore.collection('businesses').doc(currentUser.uid).get();
+        firestore.collection('lead_partners').doc(currentUser.uid).get();
 
     final List<DocumentSnapshot<Map<String, dynamic>>> snapshots =
         await Future.wait<DocumentSnapshot<Map<String, dynamic>>>(
@@ -56,7 +57,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     if (businessLooksValid) {
       return _CurrentAccount(
         uid: currentUser.uid,
-        collection: 'businesses',
+        collection: 'lead_partners',
         isBusiness: true,
       );
     }
@@ -72,7 +73,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     if (businessDoc.exists) {
       return _CurrentAccount(
         uid: currentUser.uid,
-        collection: 'businesses',
+        collection: 'lead_partners',
         isBusiness: true,
       );
     }
@@ -244,7 +245,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
         return legalBusinessName;
       }
 
-      return 'Business Partner';
+      return 'Lead Partner';
     }
 
     final String fullName = _formatDisplayText(
@@ -401,15 +402,26 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     final String rawStatus =
         _readString(data, keys, fallback: 'submitted').trim().toLowerCase();
 
-    if (rawStatus == 'verified' || rawStatus == 'approved' || rawStatus == 'success') {
-      return 'verified';
+    // ── Routed through utils/kyc_status.dart, 25 August 2026. ───────────────
+    //
+    // This screen was already CORRECT — it accepted 'approved' as well as
+    // 'verified'. business_profile_screen, four files away, did not, and that
+    // is precisely the problem: two screens in one app, each with its own
+    // private list of words, and no way to tell which list was right.
+    //
+    // Behaviour is unchanged. 'success' and 'needs_support' were carried into
+    // the shared parser so nothing is lost. The 'submitted' fallback stays:
+    // an unknown or missing value means WAITING here, not "never started",
+    // because registration always writes a value.
+    switch (kycStatusFrom(rawStatus)) {
+      case KycStatus.approved:
+        return 'verified';
+      case KycStatus.rejected:
+        return 'rejected';
+      case KycStatus.pending:
+      case KycStatus.none:
+        return 'submitted';
     }
-
-    if (rawStatus == 'rejected' || rawStatus == 'failed' || rawStatus == 'needs_support') {
-      return 'rejected';
-    }
-
-    return 'submitted';
   }
 
   String _buildVerificationStatusLabel({
@@ -683,7 +695,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
               fallback: _readNestedString(data, const <String>['profileImage', 'photoUrl']),
             );
 
-            final String roleLabel = account.isBusiness ? 'Business Partner' : 'Driver';
+            final String roleLabel = account.isBusiness ? 'Lead Partner' : 'Driver';
             final String businessName = _buildBusinessName(data);
             final String companyNumber = _buildCompanyNumber(data);
             final String vehicleType = _buildVehicleType(data);

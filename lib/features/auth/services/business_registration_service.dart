@@ -10,7 +10,7 @@ class BusinessRegistrationService {
 
   Future<void> registerBusiness(BusinessModel business) async {
     final DocumentReference<Map<String, dynamic>> docRef =
-        _firestore.collection('businesses').doc(business.uid);
+        _firestore.collection('lead_partners').doc(business.uid);
 
     final DocumentSnapshot<Map<String, dynamic>> snapshot = await docRef.get();
     final Map<String, dynamic> existingData = snapshot.data() ?? <String, dynamic>{};

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import '../../utils/kyc_status.dart';
 
 class BusinessProfileScreen extends StatefulWidget {
   const BusinessProfileScreen({super.key});
@@ -54,7 +55,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
     try {
       final DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
           .instance
-          .collection('businesses')
+          .collection('lead_partners')
           .doc(user.uid)
           .get();
 
@@ -90,8 +91,30 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
           'businessProfileVerificationBackendStatus',
         ],
       ).toLowerCase();
-      _isVerified =
-          verificationValue == 'submitted' || verificationValue == 'verified';
+      // ── ⚠ THIS WAS BACKWARDS. FIXED 25 August 2026. ────────────────────────
+      //
+      // It read:  verificationValue == 'submitted' || == 'verified'
+      //
+      // Neither word is what an approval writes, and 'submitted' is the word
+      // for NOT YET APPROVED:
+      //
+      //   business_registration_screen.dart:843 .. writes 'submitted' the
+      //   registration_screen.dart:1601 ......... moment the form is sent
+      //   business_model.dart:178 (default) ..... — reviewed by nobody
+      //
+      //   kyc_audit.js:160 ...................... writes 'approved' when an
+      //   stay_host.js:450 ...................... admin actually approves
+      //
+      // So a partner who registered ten seconds ago was shown VERIFIED, and a
+      // genuinely approved partner was shown UNVERIFIED. Both states reported
+      // as the opposite of the truth. 'verified' is written by nothing at all.
+      //
+      // ⚠ THIS CHANGES WHAT EXISTING PARTNERS SEE — anyone sitting on
+      // 'submitted' now correctly reads as not yet verified. That is the point.
+      //
+      // Parsed via utils/kyc_status.dart so a sixth spelling cannot bring this
+      // back. Do not compare the raw string here again.
+      _isVerified = kycStatusFrom(verificationValue).isApproved;
     } catch (_) {}
 
     if (!mounted) return;
@@ -112,7 +135,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
     final String fullName = '$_firstName $_surname'.trim();
     if (fullName.isNotEmpty) return fullName;
     if (_legalBusinessName.isNotEmpty) return _legalBusinessName;
-    return 'Business Partner';
+    return 'Lead Partner';
   }
 
   Widget _sectionCard({
@@ -405,7 +428,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
             _heroCard(),
             const SizedBox(height: 18),
             _sectionCard(
-              title: 'Business Partner Details',
+              title: 'Lead Partner Details',
               subtitle:
                   'These details were imported from the business registration form.',
               children: [

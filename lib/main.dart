@@ -26,6 +26,7 @@ import 'firebase_options.dart';
 import 'features/legal/early_access_banner.dart';
 import 'services/fcm_service.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
+import 'features/auth/fresh_install_guard.dart';
 
 
 
@@ -73,6 +74,21 @@ Future<void> main() async {
   // the previous intermittent crash on Signup Continue. The real fix is native
   // (AppDelegate.swift defers setAPNSToken to the next run loop tick instead).
 
+  // ── THE FRESH-INSTALL GUARD MOVED OUT OF HERE ──────────────────────────
+  //
+  // 14 August 2026. It used to be awaited on this line, before runApp.
+  //
+  // Until runApp is called Flutter has painted nothing — iOS shows the static
+  // launch image and nothing else. The guard was changed earlier the same day
+  // to await the first authStateChanges event, allowed up to five seconds, so
+  // a slow cold start meant up to five seconds of frozen picture.
+  //
+  // That is the exact failure this file already documents for FCM: "a
+  // guaranteed ~10s blank screen then crash on every launch". Same mistake,
+  // different await.
+  //
+  // It now runs in _Bootstrap below, behind the loading screen.
+
   runApp(const GoOutsDriverApp());
 }
 
@@ -95,7 +111,7 @@ class GoOutsDriverApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const AppLaunchCoordinator(),
+      home: const _Bootstrap(),
     );
   }
 }
@@ -195,7 +211,7 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
     try {
       final DocumentSnapshot<Map<String, dynamic>> businessDoc =
           await FirebaseFirestore.instance
-              .collection('businesses')
+              .collection('lead_partners')
               .doc(user.uid)
               .get();
       if (businessDoc.exists) {
@@ -281,7 +297,7 @@ class _AppLaunchCoordinatorState extends State<AppLaunchCoordinator> {
     final String accountType = await _resolveCurrentAccountType(user);
 
     final String collection = accountType == 'business'
-        ? 'businesses'
+        ? 'lead_partners'
         : accountType == 'cab_driver'
             ? 'cab_drivers'
             : 'drivers';
@@ -683,8 +699,8 @@ class RoleSelectionScreen extends StatelessWidget {
                         // ),
                         const SizedBox(height: 14),
                         _RoleCardButton(
-                          title: 'Business Partner',
-                          subtitle: 'Continue as Business',
+                          title: 'Lead Partner',
+                          subtitle: 'Continue as Lead Partner',
                           icon: Icons.storefront_rounded,
                           backgroundColor: _businessOrange,
                           onTap: () => _openRoleIntro(context, 'business'),
@@ -1641,4 +1657,51 @@ class InviteLaunchData {
     required this.inviteToken,
     required this.referralCode,
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Runs the fresh-install guard WHILE the loading screen is on screen.
+//
+//  The guard clears a session that survived an app deletion. On iOS the
+//  Keychain is not wiped when an app is removed, so without this a reinstalled
+//  app opens straight into the PREVIOUS OWNER's account — nobody typed a PIN
+//  and nobody received a code.
+//
+//  ⚠ IT IS AWAITED BEFORE THE REAL GATE IS BUILT, ON PURPOSE. Building the
+//  gate first would render that previous owner's screen for a moment before
+//  the sign-out landed. A moment is long enough to read a name and a status.
+// ─────────────────────────────────────────────────────────────────────────────
+class _Bootstrap extends StatefulWidget {
+  const _Bootstrap();
+
+  @override
+  State<_Bootstrap> createState() => _BootstrapState();
+}
+
+class _BootstrapState extends State<_Bootstrap> {
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _start();
+  }
+
+  Future<void> _start() async {
+    try {
+      await enforceFreshInstallSignOut();
+    } catch (e) {
+      // Fail open. The guard already defaults to the safe option internally;
+      // a storage error must not leave anyone stuck on a loading screen.
+      debugPrint('bootstrap: continuing after error — $e');
+    }
+    if (!mounted) return;
+    setState(() => _ready = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_ready) return const SplashLoadingScreen();
+    return const AppLaunchCoordinator();
+  }
 }

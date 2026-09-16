@@ -62,7 +62,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     final Future<DocumentSnapshot<Map<String, dynamic>>> driverFuture =
         firestore.collection('drivers').doc(user.uid).get();
     final Future<DocumentSnapshot<Map<String, dynamic>>> businessFuture =
-        firestore.collection('businesses').doc(user.uid).get();
+        firestore.collection('lead_partners').doc(user.uid).get();
     final Future<DocumentSnapshot<Map<String, dynamic>>> cabDriverFuture =
         firestore.collection('cab_drivers').doc(user.uid).get();
 
@@ -87,7 +87,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     if (businessLooksValid) {
       return _CurrentAccount(
         uid: user.uid,
-        collection: 'businesses',
+        collection: 'lead_partners',
         isBusiness: true,
       );
     }
@@ -111,7 +111,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     if (businessDoc.exists) {
       return _CurrentAccount(
         uid: user.uid,
-        collection: 'businesses',
+        collection: 'lead_partners',
         isBusiness: true,
       );
     }
@@ -575,7 +575,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         return legalBusinessName;
       }
 
-      return 'Business Partner';
+      return 'Lead Partner';
     }
 
     final String fullName = _titleCase(
@@ -1149,7 +1149,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 centerTitle: true,
                 title: AutoSizeText(
                   account.isBusiness
-                      ? 'GoOuts Business Partner'
+                      ? 'GoOuts Lead Partner'
                       : 'GoOuts Driver',
                   style: const TextStyle(
                     fontSize: 18,

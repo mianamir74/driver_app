@@ -167,7 +167,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
       final DocumentReference<Map<String, dynamic>> docRef = FirebaseFirestore
           .instance
-          .collection(isBusiness ? 'businesses' : 'drivers')
+          .collection(isBusiness ? 'lead_partners' : 'drivers')
           .doc(uid);
 
       await docRef.set(
@@ -360,7 +360,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     if (isBusiness) {
       return "Hi $safeName,\n\n"
-          "I'm a Business Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
+          "I'm a Lead Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
           "GoOuts is expanding and looking for drivers who want flexible delivery work with a simple onboarding process.\n\n"
           "You can also earn additional income by inviting other drivers once you join.\n\n"
           "Please download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
@@ -401,7 +401,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     if (isBusiness) {
       return "Hi $safeName,\n\n"
-          "I'm a Business Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
+          "I'm a Lead Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
           "GoOuts is expanding and looking for drivers who want flexible delivery work with a simple onboarding process.\n\n"
           "You can also earn additional income by inviting other drivers once you join.\n\n"
           "Please download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
@@ -474,7 +474,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
     bool isCabDriver = false,
   }) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final String ownerCollection = isBusiness ? 'businesses' : isCabDriver ? 'cab_drivers' : 'drivers';
+    final String ownerCollection = isBusiness ? 'lead_partners' : isCabDriver ? 'cab_drivers' : 'drivers';
     final String ownerAccountType = isBusiness ? 'business' : isCabDriver ? 'cab_driver' : 'driver';
 
     final Map<String, dynamic> inviteData = <String, dynamic>{
@@ -654,7 +654,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
   Future<Map<String, dynamic>?> _loadBusinessData(String uid) async {
     final DocumentSnapshot<Map<String, dynamic>> snapshot =
-        await FirebaseFirestore.instance.collection('businesses').doc(uid).get();
+        await FirebaseFirestore.instance.collection('lead_partners').doc(uid).get();
     return snapshot.data();
   }
 
@@ -1064,7 +1064,7 @@ class _InviteDriverSheetState extends State<_InviteDriverSheet> {
     setState(() => _isSubmitting = true);
 
     final String ownerCollection = widget.isBusiness
-        ? 'businesses'
+        ? 'lead_partners'
         : widget.isCabDriver
             ? 'cab_drivers'
             : 'drivers';

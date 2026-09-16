@@ -34,7 +34,7 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
         if (user == null) return;
         try {
           final doc = await FirebaseFirestore.instance
-              .collection('businesses')
+              .collection('lead_partners')
               .doc(user.uid)
               .get();
           final d = doc.data() ?? {};
@@ -59,7 +59,7 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
 
         try {
           final snapshot = await FirebaseFirestore.instance
-              .collection('businesses')
+              .collection('lead_partners')
               .doc(currentUser.uid)
               .collection('messages')
               .get();
@@ -95,14 +95,14 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
       // ── Swipe helpers ────────────────────────────────────────────────────────
       Future<void> _archiveMessage(String uid, String msgId) async {
         await FirebaseFirestore.instance
-            .collection('businesses').doc(uid)
+            .collection('lead_partners').doc(uid)
             .collection('messages').doc(msgId)
             .set({'isArchived': true}, SetOptions(merge: true));
       }
 
       Future<void> _deleteMessage(String uid, String msgId) async {
         await FirebaseFirestore.instance
-            .collection('businesses').doc(uid)
+            .collection('lead_partners').doc(uid)
             .collection('messages').doc(msgId)
             .delete();
       }
@@ -184,7 +184,7 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
               Expanded(
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: FirebaseFirestore.instance
-                      .collection('businesses')
+                      .collection('lead_partners')
                       .doc(currentUser.uid)
                       .collection('messages')
                       .orderBy('createdAt', descending: true)
@@ -354,7 +354,7 @@ import 'package:driver_app/features/common/goouts_sheet.dart';
                                     subject: title.isEmpty ? 'Support Request' : title,
                                     ticketNumber: displayNum,
                                     driverName: _businessName,
-                                    sourceCollection: 'businesses',
+                                    sourceCollection: 'lead_partners',
                                   ),
                                 ),
                               );

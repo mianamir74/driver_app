@@ -42,6 +42,24 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!--
+            ML Kit face model.
+
+            NOTE: this is belt-and-braces, not the thing that makes it work.
+            The google_mlkit_face_detection plugin depends on the BUNDLED
+            artifact (com.google.mlkit:face-detection), which ships the model
+            inside the app already — so face checks work offline and on first
+            launch with or without this line.
+
+            It is kept because it costs nothing and becomes load-bearing the
+            day anyone switches to the thin Play-Services variant
+            (play-services-mlkit-face-detection), which downloads the model on
+            first use unless this tells Play Services to fetch it at install.
+        -->
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="face" />
+
     </application>
 
     <queries>

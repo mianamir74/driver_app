@@ -250,7 +250,7 @@ class _MerchantOnboardingScreenState extends State<MerchantOnboardingScreen> {
         'pointsRatePercent': 1.0,
       };
 
-      await FirebaseFirestore.instance.collection('businesses').add(data);
+      await FirebaseFirestore.instance.collection('lead_partners').add(data);
       if (mounted) _showSuccessSheet();
     } catch (e) {
       if (mounted) _showSnack('Submission failed: $e');

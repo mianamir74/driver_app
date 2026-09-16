@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'registration_section_card.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
-/// Business Partner registration — Address section.
+/// Lead Partner registration — Address section.
 ///
 /// Smart Hybrid flow (May 2026):
 ///   1. Owner types postcode → taps "Find Official Address"

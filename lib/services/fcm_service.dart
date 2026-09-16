@@ -215,7 +215,7 @@ class DriverFcmService {
   }
 
   final DocumentSnapshot<Map<String, dynamic>> businessDoc =
-      await _firestore.collection('businesses').doc(user.uid).get();
+      await _firestore.collection('lead_partners').doc(user.uid).get();
 
   final DocumentSnapshot<Map<String, dynamic>> driverDoc =
       await _firestore.collection('drivers').doc(user.uid).get();
@@ -226,7 +226,7 @@ class DriverFcmService {
   String targetCollection;
 
   if (businessDoc.exists) {
-    targetCollection = 'businesses';
+    targetCollection = 'lead_partners';
   } else if (driverDoc.exists) {
     targetCollection = 'drivers';
   } else if (cabDriverDoc.exists) {

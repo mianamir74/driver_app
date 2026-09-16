@@ -5,7 +5,7 @@ import 'support_ticket_chat_screen.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
 
 class MyTicketsScreen extends StatefulWidget {
-  final String sourceCollection; // 'drivers' | 'cab_drivers' | 'businesses'
+  final String sourceCollection; // 'drivers' | 'cab_drivers' | 'lead_partners'
   final String driverName;
 
   const MyTicketsScreen({

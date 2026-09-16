@@ -202,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
       results = await Future.wait([
         firestore.collection('drivers').doc(user.uid).get(),
         firestore.collection('cab_drivers').doc(user.uid).get(),
-        firestore.collection('businesses').doc(user.uid).get(),
+        firestore.collection('lead_partners').doc(user.uid).get(),
       ]);
     } catch (e) {
       if (!mounted) return;
@@ -327,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await Future.wait([
       firestore.collection('drivers').doc(user.uid).get(),
       firestore.collection('cab_drivers').doc(user.uid).get(),
-      firestore.collection('businesses').doc(user.uid).get(),
+      firestore.collection('lead_partners').doc(user.uid).get(),
     ]);
 
     if (!mounted) return;
@@ -456,7 +456,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String _accountTypeHelperText() {
     if (_selectedAccountType == 'business') {
-      return 'Business Partner login';
+      return 'Lead Partner login';
     }
 
     return 'Driver login';

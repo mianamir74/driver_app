@@ -9,10 +9,10 @@ Future<String> _resolveDriverCollection(String uid) async {
   final firestore = FirebaseFirestore.instance;
   final results = await Future.wait([
     firestore.collection('cab_drivers').doc(uid).get(),
-    firestore.collection('businesses').doc(uid).get(),
+    firestore.collection('lead_partners').doc(uid).get(),
   ]);
   if (results[0].exists) return 'cab_drivers';
-  if (results[1].exists) return 'businesses';
+  if (results[1].exists) return 'lead_partners';
   return 'drivers';
 }
 

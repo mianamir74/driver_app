@@ -7,13 +7,13 @@ class BusinessProfileService {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<bool> businessProfileExists(String uid) async {
-    final doc = await _firestore.collection('businesses').doc(uid).get();
+    final doc = await _firestore.collection('lead_partners').doc(uid).get();
     return _isBusinessProfileCompleted(doc);
   }
 
   Stream<bool> businessProfileExistsStream(String uid) {
     return _firestore
-        .collection('businesses')
+        .collection('lead_partners')
         .doc(uid)
         .snapshots()
         .map(_isBusinessProfileCompleted);

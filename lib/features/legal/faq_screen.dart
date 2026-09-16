@@ -75,8 +75,9 @@ class FaqScreen extends StatelessWidget {
       answer:
           'Choose Delivery Driver if you will be delivering food and parcels. '
           'Choose Rider Driver if you will be carrying passengers in a car. '
-          'Choose Business Partner if you own or manage a restaurant, cafe, shop '
-          'or takeaway that wants to join GoOuts.',
+          'Choose Lead Partner if you want to refer drivers and businesses to '
+          'GoOuts and earn ongoing commission — this is not for registering a '
+          'restaurant, cafe, shop or takeaway.',
     ),
     _FaqItem(
       category: 'Registration',
@@ -98,12 +99,12 @@ class FaqScreen extends StatelessWidget {
     ),
     _FaqItem(
       category: 'Registration',
-      question: 'How do I register as a Business Partner?',
+      question: 'How do I register as a Lead Partner?',
       answer:
-          'Select Business Partner and you will be asked for your business name, '
-          'company number, trading address and supporting documents. Once you '
-          'submit, our partnerships team reviews the application and will '
-          'contact you directly.',
+          'Select Lead Partner and you will be asked for your own name and '
+          'contact details. Once you submit, you will get a referral code and '
+          'link so you can start inviting drivers and businesses, and you will '
+          'earn ongoing commission on what they generate.',
     ),
     _FaqItem(
       category: 'Registration',
