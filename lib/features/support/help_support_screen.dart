@@ -6,68 +6,76 @@ import 'support_ticket_chat_screen.dart';
 import 'my_tickets_screen.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
 
-// ── Category & sub-topic data ─────────────────────────────────────────────────
+// ── Topic & sub-topic data ──────────────────────────────────────────────────
+//
+// 17 September 2026: restyled to match goouts_app's Contact Support screen
+// (lib/screens/contact_support_screen.dart) — a real dropdown for Topic, and
+// icon + description tiles for the sub-topic, instead of the old plain tile
+// grid. Topics/sub-topics themselves stay driver/Lead-Partner specific
+// (Registration, Verification, Referral, Technical, General) rather than
+// copying goouts_app's consumer ones (Cashback, Card, KYC, Food Delivery),
+// which do not apply here. No self-service/AI lookup step — that engine
+// reads consumer wallet/cashback/KYC data that has no equivalent for a
+// driver/business account, so this stays a straight ticket form like before.
 
-class _Category {
-  final String id;
-  final String label;
-  final String subtitle;
-  final IconData icon;
-  final List<String> subTopics;
-
-  const _Category({
-    required this.id,
-    required this.label,
-    required this.subtitle,
-    required this.icon,
-    required this.subTopics,
-  });
-}
-
-const List<_Category> _categories = [
-  _Category(
-    id: 'registration',
-    label: 'Registration',
-    subtitle: 'Stuck, documents, referral code',
-    icon: Icons.app_registration_rounded,
-    subTopics: ['Stuck during registration', 'Document upload issue', 'Referral code problem', 'Something else'],
-  ),
-  _Category(
-    id: 'verification',
-    label: 'Verification',
-    subtitle: 'Identity check, approval, rejection',
-    icon: Icons.verified_user_rounded,
-    subTopics: ['Identity check failed', 'Approval taking too long', 'Account rejected', 'Something else'],
-  ),
-  _Category(
-    id: 'referral',
-    label: 'Referral',
-    subtitle: 'Reward not credited, code not working',
-    icon: Icons.card_giftcard_rounded,
-    subTopics: ['Reward not credited', 'Referral code not working', 'Something else'],
-  ),
-  _Category(
-    id: 'technical',
-    label: 'Technical',
-    subtitle: 'App crash, login, notifications',
-    icon: Icons.settings_rounded,
-    subTopics: ['App crashing or freezing', 'Cannot log in', 'Notifications not working', 'Something else'],
-  ),
-  _Category(
-    id: 'general',
-    label: 'General',
-    subtitle: 'Anything else',
-    icon: Icons.chat_bubble_outline_rounded,
-    subTopics: ['How GoOuts works', 'Delete my account', 'Change my details', 'Something else'],
-  ),
-  _Category(
-    id: 'other',
-    label: 'Something Else',
-    subtitle: 'Type your own subject',
-    icon: Icons.edit_rounded,
-    subTopics: [],
-  ),
+final List<Map<String, String>> _topics = [
+  {'label': '— Select a Topic —', 'value': ''},
+  {'label': 'Registration',       'value': 'registration'},
+  {'label': 'Verification',       'value': 'verification'},
+  {'label': 'Referral & Rewards', 'value': 'referral'},
+  {'label': 'Technical Issue',    'value': 'technical'},
+  {'label': 'General',            'value': 'general'},
+  {'label': 'Something Else',     'value': 'other'},
 ];
+
+final Map<String, List<Map<String, String>>> _subTopics = {
+  'registration': [
+    {'label': 'Stuck During Registration', 'icon': 'error',    'desc': "I can't get past a step in sign-up"},
+    {'label': 'Document Upload Issue',     'icon': 'upload',   'desc': "My ID or document won't upload"},
+    {'label': 'Referral Code Problem',     'icon': 'gift',     'desc': "My referral code isn't being accepted"},
+    {'label': 'Something Else',            'icon': 'help',     'desc': 'Another registration issue'},
+  ],
+  'verification': [
+    {'label': 'Identity Check Failed',       'icon': 'cancel_doc', 'desc': 'My identity verification was rejected'},
+    {'label': 'Approval Taking Too Long',    'icon': 'hourglass',  'desc': 'My account is still pending approval'},
+    {'label': 'Account Rejected',            'icon': 'block',      'desc': 'My application was declined'},
+    {'label': 'Something Else',              'icon': 'help',       'desc': 'Another verification issue'},
+  ],
+  'referral': [
+    {'label': 'Reward Not Credited',        'icon': 'wallet', 'desc': "My referral reward hasn't appeared"},
+    {'label': 'Referral Code Not Working',  'icon': 'gift',   'desc': "My code isn't being accepted by a new sign-up"},
+    {'label': 'Something Else',             'icon': 'help',   'desc': 'Another referral question'},
+  ],
+  'technical': [
+    {'label': 'App Crashing or Freezing',     'icon': 'warning',       'desc': 'The app closes or freezes unexpectedly'},
+    {'label': 'Cannot Log In',                'icon': 'lock',          'desc': "I can't sign in to my account"},
+    {'label': 'Notifications Not Working',    'icon': 'notifications', 'desc': "I'm not receiving order or app alerts"},
+    {'label': 'Something Else',               'icon': 'help',          'desc': 'Another technical issue'},
+  ],
+  'general': [
+    {'label': 'How GoOuts Works',     'icon': 'info',   'desc': 'A general question about the platform'},
+    {'label': 'Delete My Account',    'icon': 'delete', 'desc': 'I want to close my account'},
+    {'label': 'Change My Details',    'icon': 'edit',   'desc': 'I need to update my name, email or phone'},
+    {'label': 'Something Else',       'icon': 'help',   'desc': 'Another general question'},
+  ],
+};
+
+const Map<String, IconData> _topicIconMap = {
+  'error':         Icons.error_outline_rounded,
+  'upload':        Icons.upload_rounded,
+  'gift':          Icons.card_giftcard_rounded,
+  'help':          Icons.help_outline_rounded,
+  'cancel_doc':    Icons.cancel_presentation_rounded,
+  'hourglass':     Icons.hourglass_bottom_rounded,
+  'block':         Icons.block_rounded,
+  'wallet':        Icons.account_balance_wallet_rounded,
+  'warning':       Icons.warning_amber_rounded,
+  'lock':          Icons.lock_outline_rounded,
+  'notifications': Icons.notifications_none_rounded,
+  'info':          Icons.info_outline_rounded,
+  'delete':        Icons.delete_outline_rounded,
+  'edit':          Icons.edit_rounded,
+};
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
@@ -105,7 +113,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   bool _isLoading    = true;
   bool _isSubmitting = false;
 
-  _Category? _selectedCategory;
+  String     _selectedTopicValue = '';
+  String     _selectedTopicLabel = '— Select a Topic —';
   String?    _selectedSubTopic;
   bool       _showCustomSubject = false;
 
@@ -196,94 +205,111 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     return null;
   }
 
-  // ── Category tile ─────────────────────────────────────────────────────────
-  Widget _categoryTile(_Category cat) {
-    final bool isSelected = _selectedCategory?.id == cat.id;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedCategory   = cat;
-          _selectedSubTopic   = null;
-          _showCustomSubject  = cat.id == 'other';
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? _goOutsBlue.withValues(alpha: 0.06) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? _goOutsBlue : _softBorder,
-            width: isSelected ? 1.6 : 1.0,
-          ),
+  // ── Topic dropdown ────────────────────────────────────────────────────────
+  // Same control as goouts_app's Contact Support screen: a real dropdown,
+  // not a tile grid.
+  Widget _topicDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F6FA),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedTopicValue,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey),
+          style: const TextStyle(fontSize: 14, color: _textPrimary),
+          onChanged: (v) {
+            if (v == null) return;
+            final t = _topics.firstWhere((t) => t['value'] == v);
+            setState(() {
+              _selectedTopicValue = v;
+              _selectedTopicLabel = t['label']!;
+              _selectedSubTopic   = null;
+              _showCustomSubject  = v == 'other';
+              _customSubjectController.clear();
+            });
+          },
+          items: _topics
+              .map((t) => DropdownMenuItem(
+                    value: t['value'],
+                    child: Text(t['label']!,
+                        style: const TextStyle(fontSize: 14, color: _textPrimary)),
+                  ))
+              .toList(),
         ),
-        child: Row(children: [
-          Container(
-            clipBehavior: Clip.antiAlias,
-            width: 38, height: 38,
-            decoration: BoxDecoration(
-              color: isSelected ? _goOutsBlue.withValues(alpha: 0.12) : const Color(0xFFF3F6FA),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(cat.icon, size: 18,
-              color: isSelected ? _goOutsBlue : _textSecondary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(cat.label, style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w700,
-                color: isSelected ? _goOutsBlue : _textPrimary)),
-              const SizedBox(height: 2),
-              Text(cat.subtitle, style: const TextStyle(
-                fontSize: 12, color: _textSecondary)),
-            ],
-          )),
-          if (isSelected)
-            const Icon(Icons.check_circle_rounded, color: _goOutsBlue, size: 20),
-        ]),
       ),
     );
   }
 
-  // ── Sub-topic tile ────────────────────────────────────────────────────────
-  Widget _subTopicTile(String topic) {
-    final bool isSelected = _selectedSubTopic == topic;
-    final bool isSomethingElse = topic == 'Something else';
+  // ── Sub-topic tile — icon + description, matching goouts_app ───────────────
+  Widget _subTopicTile(Map<String, String> sub) {
+    final bool isSelected = _selectedSubTopic == sub['label'];
+    // Once one is picked, collapse the rest — same as goouts_app.
+    if (_selectedSubTopic != null && !isSelected) return const SizedBox.shrink();
+    final bool isSomethingElse = sub['label'] == 'Something Else';
     return GestureDetector(
       onTap: () {
         setState(() {
-          _selectedSubTopic  = topic;
+          _selectedSubTopic  = sub['label'];
           _showCustomSubject = isSomethingElse;
           if (!isSomethingElse) _customSubjectController.clear();
         });
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
+        duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? _goOutsBlue.withValues(alpha: 0.06) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? _goOutsBlue.withValues(alpha: 0.06) : const Color(0xFFF8FAFB),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? _goOutsBlue : _softBorder,
-            width: isSelected ? 1.5 : 1.0,
+            color: isSelected ? _goOutsBlue : Colors.grey[200]!,
+            width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Row(children: [
-          Icon(
-            isSomethingElse ? Icons.edit_rounded : Icons.circle,
-            size: isSomethingElse ? 16 : 8,
-            color: isSelected ? _goOutsBlue : _textSecondary),
-          const SizedBox(width: 10),
-          Expanded(child: Text(topic, style: TextStyle(
-            fontSize: 13, fontWeight: FontWeight.w600,
-            color: isSelected ? _goOutsBlue : _textPrimary))),
-          if (isSelected)
-            const Icon(Icons.check_circle_rounded, color: _goOutsBlue, size: 18),
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: isSelected ? _goOutsBlue.withValues(alpha: 0.15) : Colors.grey[100],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _topicIconMap[sub['icon']] ?? Icons.help_outline_rounded,
+              color: isSelected ? _goOutsBlue : Colors.grey[500],
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(sub['label']!, style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? _goOutsBlue : _textPrimary)),
+              Text(sub['desc']!, style: const TextStyle(
+                fontSize: 12, color: _textSecondary)),
+            ],
+          )),
+          if (isSelected) ...[
+            const Icon(Icons.check_circle_rounded, color: _goOutsBlue, size: 20),
+            GestureDetector(
+              onTap: () => setState(() {
+                _selectedSubTopic = null;
+                _showCustomSubject = false;
+                _customSubjectController.clear();
+              }),
+              child: const Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Text('Change', style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w600, color: _goOutsBlue)),
+              ),
+            ),
+          ],
         ]),
       ),
     );
@@ -292,12 +318,13 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   Future<void> _submitForm() async {
     FocusScope.of(context).unfocus();
 
-    if (_selectedCategory == null) {
-      GoOutsSheet.warning(context, title: 'Required', message: 'Please select a category.');
+    if (_selectedTopicValue.isEmpty) {
+      GoOutsSheet.warning(context, title: 'Required', message: 'Please select a topic.');
       return;
     }
 
-    if (_selectedCategory!.subTopics.isNotEmpty && _selectedSubTopic == null) {
+    final bool hasSubTopics = _subTopics.containsKey(_selectedTopicValue);
+    if (hasSubTopics && _selectedSubTopic == null) {
       GoOutsSheet.warning(context, title: 'Required', message: 'Please select a sub-topic.');
       return;
     }
@@ -317,11 +344,11 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
     // Build subject string
     final String subjectLabel = _showCustomSubject
         ? _customSubjectController.text.trim()
-        : (_selectedSubTopic ?? _selectedCategory!.label);
+        : (_selectedSubTopic ?? _selectedTopicLabel);
 
-    final String fullSubject = _selectedCategory!.id == 'other'
+    final String fullSubject = _selectedTopicValue == 'other'
         ? subjectLabel
-        : '${_selectedCategory!.label} — $subjectLabel';
+        : '$_selectedTopicLabel — $subjectLabel';
 
     try {
       final String driverName =
@@ -339,8 +366,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         'email':            _emailController.text.trim(),
         'mobileNumber':     _mobileNumberController.text.trim(),
         'referralCode':     _referralCodeController.text.trim().toUpperCase(),
-        'category':         _selectedCategory!.id,
-        'categoryLabel':    _selectedCategory!.label,
+        'category':         _selectedTopicValue,
+        'categoryLabel':    _selectedTopicLabel,
         'subTopic':         _selectedSubTopic ?? '',
         'subject':          fullSubject,
         'message':          messageText,
@@ -464,9 +491,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
       _messageController.clear();
       _customSubjectController.clear();
       setState(() {
-        _selectedCategory  = null;
-        _selectedSubTopic  = null;
-        _showCustomSubject = false;
+        _selectedTopicValue = '';
+        _selectedTopicLabel = '— Select a Topic —';
+        _selectedSubTopic   = null;
+        _showCustomSubject  = false;
       });
     } catch (_) {
       if (!mounted) return;
@@ -578,24 +606,24 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             fontWeight: FontWeight.w600)),
                     ),
 
-                    // ── Category tiles ──────────────────────────────────────
+                    // ── Topic dropdown ──────────────────────────────────────
                     _SectionCard(
                       title: 'What is your issue about?',
-                      subtitle: 'Select the category that best fits your problem.',
+                      subtitle: 'Select the topic that best fits your problem.',
                       children: [
-                        ..._categories.map((cat) => _categoryTile(cat)),
+                        _topicDropdown(),
                       ],
                     ),
                     const SizedBox(height: 16),
 
-                    // ── Sub-topic tiles (appears after category selected) ────
-                    if (_selectedCategory != null &&
-                        _selectedCategory!.subTopics.isNotEmpty) ...[
+                    // ── Sub-topic tiles (appears after topic selected) ───────
+                    if (_selectedTopicValue.isNotEmpty &&
+                        _subTopics.containsKey(_selectedTopicValue)) ...[
                       _SectionCard(
-                        title: 'Select the specific issue',
+                        title: 'What is the specific issue?',
                         subtitle: '',
                         children: [
-                          ..._selectedCategory!.subTopics
+                          ..._subTopics[_selectedTopicValue]!
                               .map((t) => _subTopicTile(t)),
                         ],
                       ),
@@ -624,9 +652,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     ],
 
                     // ── Message + Submit ─────────────────────────────────────
-                    if (_selectedCategory != null &&
+                    if (_selectedTopicValue.isNotEmpty &&
                         (_selectedSubTopic != null ||
-                            _selectedCategory!.id == 'other')) ...[
+                            _selectedTopicValue == 'other')) ...[
                       _SectionCard(
                         title: 'Your Message',
                         subtitle: 'Provide as much detail as possible.',
