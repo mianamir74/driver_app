@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../legal/terms_and_conditions_screen.dart';
 import '../../utils/kyc_status.dart';
 
@@ -489,6 +490,17 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     showTermsSheet(context);
   }
 
+  // Added 18 September 2026 — App Store / Play Store submission requires a
+  // privacy policy reachable from inside the app, not just in the store
+  // listing. Points at the real, live policy on the marketing site rather
+  // than duplicating that text here.
+  Future<void> _launchPrivacyPolicy() async {
+    final Uri uri = Uri.parse('https://www.goouts.co.uk/privacy.html');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   Widget _buildInfoTile({required IconData icon, required String title, required String value}) {
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -879,6 +891,19 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                             onPressed: _launchTerms,
                             icon: const Icon(Icons.open_in_new_rounded),
                             label: const Text('Open Terms & Conditions'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _goOutsBlue,
+                              side: const BorderSide(color: _goOutsBlue),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            onPressed: _launchPrivacyPolicy,
+                            icon: const Icon(Icons.privacy_tip_outlined),
+                            label: const Text('Open Privacy Policy'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: _goOutsBlue,
                               side: const BorderSide(color: _goOutsBlue),

@@ -1,0 +1,17 @@
+# Copy this file to "key.properties" (same folder) and fill in real values.
+# "key.properties" itself is gitignored and refused by the repo's push
+# scripts if it were ever staged — never commit the real one.
+#
+# Generate the keystore once with:
+#   keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA \
+#     -keysize 2048 -validity 10000 -alias upload
+#
+# Keep upload-keystore.jks and these passwords somewhere safe outside any
+# git repo (a password manager, not a folder that gets pushed). Losing this
+# keystore means you can never publish an update to the same Play Store
+# listing again — Google cannot reset it for you.
+
+storePassword=REPLACE_ME
+keyPassword=REPLACE_ME
+keyAlias=upload
+storeFile=/absolute/path/to/upload-keystore.jks

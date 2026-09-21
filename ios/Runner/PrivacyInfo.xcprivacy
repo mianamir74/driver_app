@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Added 18 September 2026 as part of App Store submission readiness.
+
+  Apple requires every app target to ship a privacy manifest (since May 2024,
+  enforced at App Store Connect upload). This covers what the APP'S OWN Dart
+  code does directly. Firebase/Crashlytics/Firestore/Auth/ML Kit already ship
+  their own manifests bundled in their pods — Xcode aggregates all of them at
+  archive time, so this file does not need to re-declare their usage.
+
+  The one "required reason" API the app itself touches directly is
+  UserDefaults, via the shared_preferences plugin (used for lightweight local
+  flags — see fresh_install_guard.dart). Reason CA92.1 covers reading/writing
+  app-own preferences, which is exactly this usage.
+
+  NSPrivacyTracking is false — this app does not do cross-app/cross-site
+  tracking or run ads, so NSPrivacyTrackingDomains is empty.
+
+  If Xcode's Archive > "Generate Privacy Report" flags an additional required
+  reason API when building for release (it can see native SDK usage this
+  audit cannot, without Xcode installed), add the missing
+  NSPrivacyAccessedAPIType entry it names — do not guess reason codes without
+  that report.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

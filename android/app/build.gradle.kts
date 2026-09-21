@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
 
@@ -10,6 +13,37 @@ plugins {
 
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// ── Release signing — added 18 September 2026, Play Store submission prep ──
+//
+// Android has never had a real release build (see comment on applicationId
+// below) — release always signed with the debug keys. Play Store requires a
+// real upload key.
+//
+// Reads android/key.properties, which is gitignored (see android/.gitignore)
+// and refused by the repo's push scripts (_PUSH_ENGINE.bat's secret scan) —
+// so this file must be created LOCALLY on the machine doing the release
+// build, never committed. Generate it once with:
+//
+//   keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA \
+//     -keysize 2048 -validity 10000 -alias upload
+//
+// then create android/key.properties (NOT committed) with:
+//   storePassword=<password you set above>
+//   keyPassword=<password you set above>
+//   keyAlias=upload
+//   storeFile=/absolute/path/to/upload-keystore.jks
+//
+// If key.properties is missing (e.g. a normal dev machine), release builds
+// fall back to debug signing exactly as before — `flutter run --release`
+// keeps working without a real keystore. Only a build with key.properties
+// present produces something installable/uploadable to Play Console.
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+val hasReleaseKeystore = keystorePropertiesFile.exists()
+if (hasReleaseKeystore) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -46,10 +80,27 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Signing with the debug keys for now, so flutter run --release works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Real upload key when android/key.properties exists (see the
+            // comment above), debug keys otherwise so `flutter run --release`
+            // keeps working on a normal dev machine without one.
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

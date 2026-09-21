@@ -25,10 +25,17 @@
 	<string>GoOuts Lead needs access to your photo library to upload documents and profile photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>GoOuts Lead may save photos during document upload.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>GoOuts Lead uses your location to track deliveries and verify your presence at partner locations.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>GoOuts Lead uses your location in the background to track active deliveries.</string>
+	<!--
+	  REMOVED 18 September 2026 — App Store submission audit: declaring a
+	  permission string the app never requests (no geolocator/location
+	  package in pubspec.yaml, no location code anywhere in lib/, and no
+	  "location" UIBackgroundModes entry) is flagged by App Review and widens
+	  the privacy surface for no reason. Was:
+	    NSLocationWhenInUseUsageDescription
+	    NSLocationAlwaysAndWhenInUseUsageDescription
+	  Re-add both (and a "location" UIBackgroundModes entry) if live delivery
+	  location tracking is actually built.
+	-->
 	<key>NSFaceIDUsageDescription</key>
 	<string>GoOuts Lead uses Face ID to keep your account secure.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
