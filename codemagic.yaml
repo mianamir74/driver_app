@@ -1,6 +1,6 @@
 workflows:
   ios-testflight:
-    name: GoOuts Lead — iOS TestFlight
+    name: GoOuts Enroll — iOS TestFlight
     max_build_duration: 60
     instance_type: mac_mini_m1
 

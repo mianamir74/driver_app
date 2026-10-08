@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../legal/terms_and_conditions_screen.dart';
+import '../../main.dart' show RoleSelectionScreen;
 import '../../utils/kyc_status.dart';
 
 class DriverProfileScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
   static const Color _goOutsBlue = Color(0xFF0392CA);
   static const Color _screenBackground = Color(0xFFF2F3F7);
   late final Future<_CurrentAccount?> _accountFuture;
+  bool _deleting = false;
 
   @override
   void initState() {
@@ -501,6 +504,109 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     }
   }
 
+  // ── Account deletion — added 21 September 2026 ──────────────────────────
+  // Two-step confirmation (this dialog, then a typed "DELETE") before
+  // anything irreversible happens — deleting the wrong account by a
+  // misplaced tap is exactly the kind of thing a single confirm button lets
+  // through.
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final TextEditingController confirmCtrl = TextEditingController();
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          final bool canConfirm =
+              confirmCtrl.text.trim().toUpperCase() == 'DELETE';
+          return AlertDialog(
+            title: const Text('Delete your account?'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text(
+                  'This cannot be undone. Your name, email, phone number, '
+                  'address, photos and ID documents will be permanently '
+                  'removed and you will be signed out immediately.\n\n'
+                  'Type DELETE to confirm.',
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: confirmCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    hintText: 'DELETE',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setDialogState(() {}),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: canConfirm
+                    ? () => Navigator.of(dialogCtx).pop(true)
+                    : null,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFDC2626),
+                ),
+                child: const Text('Delete Permanently'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    await _deleteAccount(context);
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    setState(() => _deleting = true);
+    try {
+      // Server-side: verified by the caller's own Firebase ID token
+      // (request.auth.uid), so this can only ever delete the signed-in
+      // user's own account — see functions/index.js deleteMyAccount.
+      await FirebaseFunctions.instanceFor(region: 'europe-west1')
+          .httpsCallable('deleteMyAccount')
+          .call();
+
+      await FirebaseAuth.instance.signOut();
+      if (!context.mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute<void>(
+          builder: (_) => const RoleSelectionScreen(),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      setState(() => _deleting = false);
+      showDialog<void>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Could not delete account'),
+          content: Text('Please try again, or contact support if this keeps happening.\n\n$e'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   Widget _buildInfoTile({required IconData icon, required String title, required String value}) {
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -907,6 +1013,65 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                             style: OutlinedButton.styleFrom(
                               foregroundColor: _goOutsBlue,
                               side: const BorderSide(color: _goOutsBlue),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // ── Danger zone — added 21 September 2026, App Store /
+                    // Play Store submission requirement (Apple 5.1.1(v),
+                    // Google Play Account Deletion policy): a real in-app
+                    // way to delete the account, not just a support ticket.
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 14),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Row(
+                            children: <Widget>[
+                              Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
+                              SizedBox(width: 10),
+                              Text(
+                                'Danger Zone',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Permanently delete your account. Your name, email, phone, address, photos and ID documents are removed immediately. Earnings and payout history are kept for the period required by UK tax law, with your personal details cleared from them.',
+                            style: TextStyle(fontSize: 13, color: Colors.black54, height: 1.45),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: _deleting
+                                ? null
+                                : () => _confirmDeleteAccount(context),
+                            icon: _deleting
+                                ? const SizedBox(
+                                    width: 16, height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.delete_forever_rounded),
+                            label: Text(_deleting ? 'Deleting…' : 'Delete My Account'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFDC2626),
+                              side: const BorderSide(color: Color(0xFFDC2626)),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),

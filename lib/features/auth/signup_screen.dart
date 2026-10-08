@@ -140,13 +140,13 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: Text(
                   _termsFromDb ?? '''Last updated: June 2026
 
-Welcome to GoOuts Lead. By accessing or using the GoOuts Lead application and services, you agree to be bound by these Terms of Service. Please read them carefully before proceeding.
+Welcome to GoOuts Enroll. By accessing or using the GoOuts Enroll application and services, you agree to be bound by these Terms of Service. Please read them carefully before proceeding.
 
 1. ACCEPTANCE OF TERMS
-By creating an account or using the GoOuts Lead platform, you confirm that you are at least 18 years of age, a UK resident, and that you accept these Terms of Service in full.
+By creating an account or using the GoOuts Enroll platform, you confirm that you are at least 18 years of age, a UK resident, and that you accept these Terms of Service in full.
 
 2. DESCRIPTION OF SERVICE
-GoOuts Lead is a driver and partner management platform operated by GoOuts Limited.
+GoOuts Enroll is a driver and partner management platform operated by GoOuts Limited.
 
 3. ACCOUNT REGISTRATION
 You must provide accurate and complete information when registering. You are responsible for maintaining the confidentiality of your account credentials.
@@ -187,7 +187,7 @@ For questions: legal@goouts.co.uk''',
 
                 // Brand Header
                 Text(
-                  'GoOuts Lead',
+                  'GoOuts Enroll',
                   style: GoogleFonts.inter(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,

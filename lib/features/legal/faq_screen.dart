@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FAQ Screen  —  GoOuts Lead (enrolment / referral app)
+// FAQ Screen  —  GoOuts Enroll (enrolment / referral app)
 //
 // Loads FAQ items from Firestore collection `driver_lead_faqs`.
 // Fields: question, answer, category, order, isActive.
 // Falls back to the hardcoded defaults below when the collection is empty or
-// unreachable. Managed from Admin Panel → Driver FAQs → GoOuts Lead.
+// unreachable. Managed from Admin Panel → Driver FAQs → GoOuts Enroll.
 //
 // IMPORTANT: the collection name and the `isActive` field name must stay in
 // step with _DriverFaqsPage in admin_panel/lib/admin_dashboard.dart. Until

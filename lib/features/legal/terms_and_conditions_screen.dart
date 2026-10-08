@@ -162,7 +162,7 @@ class _TermsContent extends StatelessWidget {
         // ── 1. Acceptance ────────────────────────────────────────────────
         _sectionTitle('1. Acceptance of Terms'),
         _body(
-          'By registering for and using the GoOuts Lead Generation app ("the App"), you agree '
+          'By registering for and using the GoOuts Enroll app ("the App"), you agree '
           'to be bound by these Terms and Conditions ("Terms"). Please read '
           'them carefully before using the App. If you do not agree to these '
           'Terms, you must not use the App.',

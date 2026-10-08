@@ -14,7 +14,7 @@
 //
 // Why it matters here specifically: a driver account holds their KYC record,
 // identity documents, business details and live bookings. Someone sells or
-// hands on a phone, the next owner installs GoOuts Lead, and they are signed
+// hands on a phone, the next owner installs GoOuts Enroll, and they are signed
 // in as the previous owner. Nobody typed a PIN and nobody received an OTP.
 //
 // ── HOW THE DETECTION WORKS ──────────────────────────────────────────────
