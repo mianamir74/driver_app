@@ -152,7 +152,7 @@ class _TermsContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _lastUpdated('May 2026'),
+        _lastUpdated('October 2026'),
         const SizedBox(height: 16),
 
         // ── Important Notice ─────────────────────────────────────────────
@@ -233,7 +233,7 @@ class _TermsContent extends StatelessWidget {
         ),
         _subTitle('Data Controller'),
         _body(
-          'GoOuts Worldwide Ltd is the data controller responsible for your personal '
+          'GoOuts Technologies Limited is the data controller responsible for your personal '
           'data collected through this App.',
         ),
         _subTitle('What Data We Collect'),
@@ -283,7 +283,7 @@ class _TermsContent extends StatelessWidget {
         ),
         _body(
           'To exercise any of these rights, please contact us at '
-          'privacy@goouts.app. We will respond within 30 days.',
+          'privacy@goouts.co.uk. We will respond within 30 days.',
         ),
         _subTitle('Data Retention'),
         _body(
@@ -333,8 +333,61 @@ class _TermsContent extends StatelessWidget {
           'suspected fraud to GoOuts immediately.',
         ),
 
-        // ── 6. Suspension & Termination ───────────────────────────────────
-        _sectionTitle('6. Account Suspension and Termination'),
+        // ── 6. Sign Up Bonus and Residual Income ─────────────────────────
+        _sectionTitle('6. Sign Up Bonus and Residual Income'),
+        _body(
+          'You can earn a one time sign up bonus of £25 for each business '
+          'partner you successfully sign up to GoOuts, plus residual income '
+          'on the activity of the businesses and drivers you refer.',
+        ),
+        _subTitle('When a business counts as live and operational'),
+        _body(
+          'A business partner you sign up is treated as live and successfully '
+          'operational only when all of the following have happened:',
+        ),
+        _bullet(
+          'GoOuts has checked and approved the business details and the '
+          'owner or contact details submitted through the App.',
+        ),
+        _bullet(
+          'The business has accepted the GoOuts partner terms and its deal '
+          'is published and visible to customers in the GoOuts app.',
+        ),
+        _bullet(
+          'The business has completed a minimum of 3 genuine customer '
+          'transactions through GoOuts within 90 days of its sign up date.',
+        ),
+        _body(
+          'The £25 sign up bonus is only paid once the business partner is '
+          'live and successfully operational as described above. You can '
+          'follow the status of each business you signed up in the App.',
+        ),
+        _body(
+          'If a business does not reach 3 transactions within 90 days of its '
+          'sign up date, no sign up bonus is paid for that business. Any '
+          'residual income from its later activity is not affected.',
+        ),
+        _subTitle('Other bonus and residual income rules'),
+        _bullet(
+          'The bonus is paid once per business partner. A business that is '
+          'already registered with GoOuts, or that was signed up by someone '
+          'else first, does not qualify.',
+        ),
+        _bullet(
+          'Residual income depends on the real activity of the businesses '
+          'and drivers you refer and is not guaranteed.',
+        ),
+        _bullet(
+          'Any "up to £3,000 a year" figure is the combined maximum of sign up '
+          'bonuses and residual income. Your actual earnings may be lower.',
+        ),
+        _bullet(
+          'GoOuts may withhold or reverse any bonus or residual income linked '
+          'to fake, duplicate or fraudulent sign ups or transactions.',
+        ),
+
+        // ── 7. Suspension & Termination ───────────────────────────────────
+        _sectionTitle('7. Account Suspension and Termination'),
         _body(
           'GoOuts reserves the right to suspend or permanently terminate '
           'your account without prior notice if:',
@@ -352,8 +405,8 @@ class _TermsContent extends StatelessWidget {
           'business partners, or GoOuts.',
         ),
 
-        // ── 7. Limitation of Liability ────────────────────────────────────
-        _sectionTitle('7. Limitation of Liability'),
+        // ── 8. Limitation of Liability ────────────────────────────────────
+        _sectionTitle('8. Limitation of Liability'),
         _body(
           'To the fullest extent permitted by applicable law, GoOuts shall '
           'not be liable for any indirect, incidental, special, or '
@@ -363,8 +416,8 @@ class _TermsContent extends StatelessWidget {
           'our negligence, or for fraud or fraudulent misrepresentation.',
         ),
 
-        // ── 8. Changes to Terms ───────────────────────────────────────────
-        _sectionTitle('8. Changes to These Terms'),
+        // ── 9. Changes to Terms ───────────────────────────────────────────
+        _sectionTitle('9. Changes to These Terms'),
         _body(
           'We reserve the right to update or modify these Terms at any '
           'time. Where changes are material, we will notify you via the '
@@ -372,8 +425,8 @@ class _TermsContent extends StatelessWidget {
           'of changes constitutes your acceptance of the updated Terms.',
         ),
 
-        // ── 9. Governing Law ─────────────────────────────────────────────
-        _sectionTitle('9. Governing Law'),
+        // ── 10. Governing Law ─────────────────────────────────────────────
+        _sectionTitle('10. Governing Law'),
         _body(
           'These Terms are governed by and construed in accordance with '
           'the laws of England and Wales. Any disputes shall be subject '
@@ -381,15 +434,15 @@ class _TermsContent extends StatelessWidget {
           'Wales.',
         ),
 
-        // ── 10. Contact ───────────────────────────────────────────────────
-        _sectionTitle('10. Contact Us'),
+        // ── 11. Contact ───────────────────────────────────────────────────
+        _sectionTitle('11. Contact Us'),
         _body(
           'If you have any questions about these Terms or our data '
           'practices, please contact us:',
         ),
-        _bullet('Email: legal@goouts.app'),
-        _bullet('Privacy enquiries: privacy@goouts.app'),
-        _bullet('Address: GoOuts Worldwide Ltd, United Kingdom'),
+        _bullet('Email: legal@goouts.co.uk'),
+        _bullet('Privacy enquiries: privacy@goouts.co.uk'),
+        _bullet('Address: GoOuts Technologies Limited (Company No. 12200097), United Kingdom'),
 
       ],
     );

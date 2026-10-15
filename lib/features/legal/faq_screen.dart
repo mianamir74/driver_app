@@ -275,7 +275,7 @@ class FaqScreen extends StatelessWidget {
       answer:
           'Open the menu and tap Help and Support to raise a ticket from inside '
           'the app. You can choose a category, describe the issue and attach a '
-          'photo if it helps. You can also email support@goouts.app. We aim to '
+          'photo if it helps. You can also email support@goouts.co.uk. We aim to '
           'reply within one working day.',
     ),
     _FaqItem(
