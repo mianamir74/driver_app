@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/activity_log_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -242,6 +243,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       localMobile = '0${e164Phone.substring(3)}';
     }
 
+    await ActivityLogService.log('logout');
     await FirebaseAuth.instance.signOut();
     if (!mounted) {
       return;

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/activity_log_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -285,6 +286,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           .timeout(const Duration(seconds: 8));
       _bc('verifyOtp: signInWithCredential returned successfully');
 
+      await ActivityLogService.log('login_otp');
       await _completeSuccessfulVerification();
     } on FirebaseAuthException catch (e) {
       if (!mounted) {

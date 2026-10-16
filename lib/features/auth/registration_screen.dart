@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../services/activity_log_service.dart';
 import 'utils/pin_password.dart';
 import '../../services/address_lookup_service.dart';
 import '../../services/biometric_selfie_inspector.dart';
@@ -1467,8 +1468,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         password: pinToFirebasePassword(password),
       );
       await currentUser.linkWithCredential(cred);
-    } catch (_) {
-      // Already linked or non-critical — ignore
+      await ActivityLogService.log('pin_saved');
+    } on FirebaseAuthException catch (e) {
+      // Still non-blocking, but now recorded so a broken PIN save is visible.
+      await ActivityLogService.log('pin_save_failed',
+          details: <String, dynamic>{'code': e.code});
+    } catch (e) {
+      await ActivityLogService.log('pin_save_failed',
+          details: <String, dynamic>{'error': e.toString()});
     }
   }
 
@@ -1624,6 +1631,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
       if (!mounted) return;
 
+      await ActivityLogService.log('registration_completed');
+      if (!mounted) return;
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
@@ -1901,6 +1910,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         password: _pinController.text,
       );
 
+      if (!mounted) return;
+      await ActivityLogService.log('registration_completed');
       if (!mounted) return;
       await showDialog<void>(
         context: context,

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/activity_log_service.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -579,6 +580,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
           .httpsCallable('deleteMyAccount')
           .call();
 
+      await ActivityLogService.log('logout');
       await FirebaseAuth.instance.signOut();
       if (!context.mounted) return;
 

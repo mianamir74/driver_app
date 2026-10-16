@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../services/activity_log_service.dart';
 import 'utils/pin_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -287,6 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final User? user = credential.user;
       if (user != null) {
+        await ActivityLogService.log('login_pin');
         await _navigateToHomeForExistingUser(user);
       } else {
         // Credential returned no user — unexpected. Show error instead of
