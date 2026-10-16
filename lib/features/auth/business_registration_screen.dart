@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'utils/pin_password.dart';
 import '../../services/address_lookup_service.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -424,7 +425,7 @@ class _BusinessRegistrationScreenState
           '${phone.replaceAll('+', '').replaceAll(' ', '')}@goouts.app';
       final AuthCredential cred = EmailAuthProvider.credential(
         email: email,
-        password: password,
+        password: pinToFirebasePassword(password),
       );
       await currentUser.linkWithCredential(cred);
     } catch (_) {

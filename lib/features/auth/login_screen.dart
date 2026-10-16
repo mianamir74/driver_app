@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'utils/pin_password.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -259,11 +260,24 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final UserCredential credential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailForAuth,
-        password: _passwordController.text,
-      );
+      UserCredential credential;
+      try {
+        credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailForAuth,
+          password: pinToFirebasePassword(_passwordController.text),
+        );
+      } on FirebaseAuthException catch (e) {
+        // Fallback for any older account that saved a raw PIN of 6 or more
+        // characters before pinToFirebasePassword existed.
+        if (_passwordController.text.length < 6 ||
+            (e.code != 'wrong-password' && e.code != 'invalid-credential')) {
+          rethrow;
+        }
+        credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailForAuth,
+          password: _passwordController.text,
+        );
+      }
 
       // Mirror the OTP flow — save account type so main.dart routes correctly
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -287,7 +301,8 @@ class _LoginScreenState extends State<LoginScreen> {
         case 'wrong-password':
         case 'invalid-credential':
           message =
-              'Incorrect PIN. Please try again or tap "Forgot PIN?" to reset via OTP.';
+              'Incorrect PIN, or no PIN has been set for this number yet. '
+              'Tap "Forgot PIN?" to log in with a code sent by SMS.';
         case 'user-not-found':
           message =
               'No account linked to this number. Please use OTP login.';

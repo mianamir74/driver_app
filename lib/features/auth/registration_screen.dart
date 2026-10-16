@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'utils/pin_password.dart';
 import '../../services/address_lookup_service.dart';
 import '../../services/biometric_selfie_inspector.dart';
 import '../../services/document_quality_inspector.dart';
@@ -1463,7 +1464,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           '${phone.replaceAll('+', '').replaceAll(' ', '')}@goouts.app';
       final AuthCredential cred = EmailAuthProvider.credential(
         email: email,
-        password: password,
+        password: pinToFirebasePassword(password),
       );
       await currentUser.linkWithCredential(cred);
     } catch (_) {
