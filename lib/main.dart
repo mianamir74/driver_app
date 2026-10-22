@@ -27,6 +27,7 @@ import 'features/legal/early_access_banner.dart';
 import 'services/fcm_service.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
 import 'features/auth/fresh_install_guard.dart';
+import 'features/auth/intro_slide_content.dart';
 
 
 
@@ -838,48 +839,19 @@ class RoleIntroSlidesScreen extends StatefulWidget {
 class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
   static const Color _goOutsBlue = Color(0xFF0392CA);
 
-  static const List<String> _driverSlides = [
-    'assets/intro/Become Partner_2.png',
-    'assets/intro/Invite Friends_3.png',
-    'assets/intro/Commission Structure_3a.png',
-    'assets/intro/Grow Network_4.png',
-    'assets/intro/Limited Promo_5.png',
-    'assets/intro/More opportunities_6.png',
-    'assets/intro/Stay tuned_7.png',
-  ];
-
-  static const List<String> _businessSlides = [
-    'assets/intro/Become Partner_2a.png',
-    'assets/intro/Invite Friends_3.png',
-    'assets/intro/Commission Structure_3a.png',
-    'assets/intro/Grow Network_4.png',
-    'assets/intro/More opportunities_6.png',
-    'assets/intro/Stay tuned_7.png',
-  ];
-
-  static const List<String> _cabDriverSlides = [
-    'assets/intro/Become Partner_2b.png',
-    'assets/intro/Invite Friends_3.png',
-    'assets/intro/Commission Structure_3a.png',
-    'assets/intro/Grow Network_4.png',
-    'assets/intro/Limited Promo_5.png',
-    'assets/intro/More opportunities_6.png',
-    'assets/intro/Stay tuned_7.png',
-  ];
-
   final PageController _pageController = PageController();
 
   int _currentIndex = 0;
   bool _isFinishing = false;
 
- List<String> get _slides {
+  List<IntroSlideData> get _slides {
     if (widget.accountType == 'business') {
-      return _businessSlides;
+      return IntroSlides.business;
     }
     if (widget.accountType == 'cab_driver') {
-      return _cabDriverSlides;
+      return IntroSlides.cabDriver;
     }
-    return _driverSlides;
+    return IntroSlides.driver;
   }
 
   bool get _isLastSlide => _currentIndex == _slides.length - 1;
@@ -1075,24 +1047,10 @@ class _RoleIntroSlidesScreenState extends State<RoleIntroSlidesScreen> {
     );
   }
 
-  Widget _buildSlide(String path) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-      child: Center(
-        child: Image.asset(
-          path,
-          fit: BoxFit.contain,
-          filterQuality: FilterQuality.high,
-          errorBuilder: (_, __, ___) => const Icon(
-            Icons.image_not_supported_outlined,
-            size: 80,
-            color: Color(0xFF0392CA),
-          ),
-        ),
-      ),
+  Widget _buildSlide(IntroSlideData slide) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: IntroSlideView(slide: slide),
     );
   }
 

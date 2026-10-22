@@ -233,7 +233,7 @@ class _TermsContent extends StatelessWidget {
         ),
         _subTitle('Data Controller'),
         _body(
-          'GoOuts Technologies Limited is the data controller responsible for your personal '
+          'GoOuts Technologies Ltd is the data controller responsible for your personal '
           'data collected through this App.',
         ),
         _subTitle('What Data We Collect'),
@@ -367,6 +367,40 @@ class _TermsContent extends StatelessWidget {
           'sign up date, no sign up bonus is paid for that business. Any '
           'residual income from its later activity is not affected.',
         ),
+        _subTitle('How residual income is calculated'),
+        _bullet(
+          'Driver referrals: a percentage of the referred driver\u2019s base '
+          'fare earnings only (pickup fee, drop off fee, distance pay, time pay '
+          'and multi drop base fee). Tips, tolls, Congestion Charge, ULEZ, '
+          'parking, promotions, surge or peak pay, boosts, quests, streak or '
+          'target bonuses, guaranteed earnings top ups, sign up or weather '
+          'bonuses, wait time pay, cancellation fees, long distance return '
+          'supplements, support adjustments, expense refunds and referral '
+          'rewards are excluded.',
+        ),
+        _bullet(
+          'Venue referrals: a percentage of the net profit GoOuts makes on '
+          'the venue\u2019s orders, meaning GoOuts commission minus the '
+          'cashback rewards given to customers.',
+        ),
+        _bullet(
+          'Tiers by number of successful referrals: 1 to 5 referrals 2%, '
+          '6 to 10 referrals 3%, 11 to 50 referrals (and beyond) 5%. The same '
+          'tiers apply to drivers and Lead Partners.',
+        ),
+        _bullet(
+          'Residual income is paid for up to 2 years for each referred driver '
+          'or venue, counted from their first paid order. GoOuts may extend '
+          'this period.',
+        ),
+        _bullet(
+          'Residual income is paid by GoOuts from its own share and is never '
+          'deducted from the referred driver\u2019s or venue\u2019s earnings.',
+        ),
+        _bullet(
+          'If an order is refunded, cancelled with a refund or charged back, '
+          'the residual income paid on it is reversed.',
+        ),
         _subTitle('Other bonus and residual income rules'),
         _bullet(
           'The bonus is paid once per business partner. A business that is '
@@ -442,7 +476,7 @@ class _TermsContent extends StatelessWidget {
         ),
         _bullet('Email: legal@goouts.co.uk'),
         _bullet('Privacy enquiries: privacy@goouts.co.uk'),
-        _bullet('Address: GoOuts Technologies Limited (Company No. 12200097), United Kingdom'),
+        _bullet('Address: GoOuts Technologies Ltd (Company No. 12200097), United Kingdom'),
 
       ],
     );

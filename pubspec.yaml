@@ -59,7 +59,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/intro/
+    - assets/intro_art/
     - assets/logo/
 
   fonts:

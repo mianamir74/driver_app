@@ -195,29 +195,72 @@ class FaqScreen extends StatelessWidget {
       question: 'Is there a limit on how many people I can refer?',
       answer:
           'No. There is no cap on the number of drivers or businesses you can '
-          'bring to GoOuts, and no cap on your commission tier once you have '
-          'reached the top of the scale.',
+          'bring to GoOuts. From 11 referrals you stay on the top 5 percent tier, '
+          'paid for up to 2 years for each referral.',
     ),
 
     // ── Earnings ─────────────────────────────────────────────────────────────
     _FaqItem(
       category: 'Earnings',
-      question: 'How does referral commission actually work?',
+      question: 'How is residual income worked out?',
       answer:
-          'You earn a percentage of the profit GoOuts makes from each driver you '
-          'referred, paid monthly for as long as that driver stays active. It is '
-          'never taken out of the driver’s own earnings, so referring '
-          'somebody costs them nothing at all.',
+          'You earn a percentage of the BASE FARE earnings of each driver you '
+          'refer, and a percentage of the NET PROFIT GoOuts makes from each venue '
+          'you introduce (GoOuts commission minus the cashback rewards given to '
+          'customers). GoOuts pays it from its own share, so nothing is ever taken '
+          'from the driver or the venue. The same rules apply to drivers and to '
+          'Lead Partners.',
     ),
     _FaqItem(
       category: 'Earnings',
       question: 'What are the commission tiers?',
       answer:
-          'There are three tiers, set by how many of your referred drivers are '
-          'active. With 1 to 5 active drivers you earn 3 percent. With 6 to 10 '
-          'you earn 4 percent. With 11 or more you earn 5 percent, which is the '
-          'maximum and stays yours from then on. Your current tier and your '
-          'progress towards the next one are shown in the earnings section.',
+          'Your tier depends on how many successful referrals you have. 1 to 5 '
+          'referrals: 2 percent. 6 to 10 referrals: 3 percent. 11 to 50 referrals '
+          '(and beyond): 5 percent. Your current tier and your progress to the '
+          'next one are shown in the earnings section.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
+      question: 'What counts as base fare?',
+      answer:
+          'Base fare is the pickup fee, the drop off fee, distance pay, time pay '
+          'and the base fee for each extra order in a multi drop. It does NOT '
+          'include tips, tolls, Congestion Charge, ULEZ or parking, promotions, '
+          'surge or peak pay, boosts, quests, streak or target bonuses, guaranteed '
+          'earnings top ups, sign up or weather bonuses, wait time pay, '
+          'cancellation fees, long distance return supplements, support '
+          'adjustments or expense refunds, or any referral rewards.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
+      question: 'How long is residual income paid?',
+      answer:
+          'For up to 2 years for each driver or venue you refer, counted from '
+          'their first paid order. GoOuts may extend this period.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
+      question: 'What happens if an order is refunded?',
+      answer:
+          'If an order is refunded, cancelled with a refund or charged back, the '
+          'residual income paid on that order is taken back from your earnings. '
+          'Residual linked to fake, duplicate or fraudulent sign ups or orders is '
+          'withheld or reversed.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
+      question: 'Can you show me an example?',
+      answer:
+          'Driver example: your referred driver earns £300 in a week, made of '
+          '£200 base fare, £40 tips, £30 surge and promotions, £20 wait time pay '
+          'and £10 tolls. Only the £200 base fare counts. At 2 percent you earn '
+          '£4.00, at 3 percent £6.00, at 5 percent £10.00.\n\n'
+          'Venue example: a customer orders £40 of food from a venue you '
+          'introduced. GoOuts commission at 15 percent is £6.00 and the customer '
+          'gets £2.00 cashback rewards, so GoOuts net profit is £4.00. At '
+          '2 percent you earn £0.08, at 3 percent £0.12, at 5 percent £0.20. '
+          '1,000 such orders a month at 5 percent would earn you £200.',
     ),
     _FaqItem(
       category: 'Earnings',
