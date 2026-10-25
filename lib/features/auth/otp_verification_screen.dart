@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../home/business_home_screen.dart';
 import '../home/driver_home_screen.dart';
 import 'auth_flow_guard.dart';
+import 'utils/set_pin_prompt.dart';
 import 'referral_code_screen.dart';
 import 'business_referral_code_screen.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -18,6 +19,9 @@ class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
   final String localMobileNumber;
   final int? resendToken;
+  // True when the user came here through "Forgot PIN?". After the SMS code is
+  // accepted they are asked to set a new PIN. Added 25 October 2026.
+  final bool isPinReset;
 
   const OtpVerificationScreen({
     super.key,
@@ -25,6 +29,7 @@ class OtpVerificationScreen extends StatefulWidget {
     required this.phoneNumber,
     required this.localMobileNumber,
     required this.resendToken,
+    this.isPinReset = false,
   });
 
   @override
@@ -222,6 +227,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final bool isBusiness = businessResult.exists;
 
     if (!mounted) return;
+
+    // Existing account logged in by SMS: make sure it has a working PIN.
+    // Asked when the user tapped "Forgot PIN?" or the account has no PIN yet
+    // (accounts created before 16 October 2026). Added 25 October 2026.
+    if ((isBusiness || isDriver || isCabDriver) &&
+        (widget.isPinReset || !userHasPin(user))) {
+      _bc('completeVerification: asking for PIN');
+      await promptSetPin(context, user, isReset: widget.isPinReset);
+      if (!mounted) return;
+    }
 
     // Release guard just before navigation.
     AuthFlowGuard.end();

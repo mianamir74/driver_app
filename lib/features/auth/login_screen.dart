@@ -433,6 +433,7 @@ class _LoginScreenState extends State<LoginScreen> {
               phoneNumber: e164PhoneNumber,
               localMobileNumber: localMobile,
               resendToken: resendToken,
+              isPinReset: _cameFromForgotPin,
             ),
           ),
         );
