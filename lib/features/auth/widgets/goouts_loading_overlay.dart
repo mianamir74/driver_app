@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Full-screen branded loading overlay — used during Firebase OTP / reCAPTCHA.
-// Copied from GoOuts consumer app and adapted for GoOuts Enroll.
+// Copied from GoOuts consumer app and adapted for GoOuts Lead.
 
 class GoOutsLoadingOverlay extends StatefulWidget {
   final String message;

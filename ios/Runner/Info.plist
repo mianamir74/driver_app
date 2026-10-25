@@ -21,11 +21,11 @@
 		</dict>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>GoOuts Enroll needs camera access for document scanning and profile photos.</string>
+	<string>GoOuts Lead needs camera access for document scanning and profile photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>GoOuts Enroll needs access to your photo library to upload documents and profile photos.</string>
+	<string>GoOuts Lead needs access to your photo library to upload documents and profile photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>GoOuts Enroll may save photos during document upload.</string>
+	<string>GoOuts Lead may save photos during document upload.</string>
 	<!--
 	  REMOVED 18 September 2026 — App Store submission audit: declaring a
 	  permission string the app never requests (no geolocator/location
@@ -38,13 +38,13 @@
 	  location tracking is actually built.
 	-->
 	<key>NSFaceIDUsageDescription</key>
-	<string>GoOuts Enroll uses Face ID to keep your account secure.</string>
+	<string>GoOuts Lead uses Face ID to keep your account secure.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>GoOuts Enroll</string>
+	<string>GoOuts Lead</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -52,7 +52,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>GoOuts Enroll</string>
+	<string>GoOuts Lead</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
