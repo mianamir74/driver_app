@@ -372,7 +372,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
     if (isCabDriver) {
       return "Hi $safeName,\n\n"
           "I've joined GoOuts Rider Driver, a new platform launching soon with a strong residual income model for drivers.\n\n"
-          "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net profit from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
+          "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
           "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
           "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
@@ -382,7 +382,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     return "Hi $safeName,\n\n"
         "I've joined GoOuts Food Delivery, a new platform launching soon with a strong residual income model for drivers.\n\n"
-        "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net profit from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
+        "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
         "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
         "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
         "$referralCode\n\n"
@@ -413,7 +413,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
     if (isCabDriver) {
       return "Hi $safeName,\n\n"
           "I've joined GoOuts Rider Driver, a new platform launching soon with a strong residual income model for drivers.\n\n"
-          "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net profit from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
+          "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
           "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
           "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
@@ -423,7 +423,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     return "Hi $safeName,\n\n"
         "I've joined GoOuts Food Delivery, a new platform launching soon with a strong residual income model for drivers.\n\n"
-        "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net profit from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
+        "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
         "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
         "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
         "$referralCode\n\n"

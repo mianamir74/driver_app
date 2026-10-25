@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../../services/activity_log_service.dart';
 import 'utils/pin_password.dart';
+import 'utils/set_pin_prompt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String _selectedAccountType = 'driver';
   bool _hasReadRouteArgs = false;
   bool _isReturningUser = false;
+  bool _cameFromForgotPin = false;
   bool _obscurePassword = true;
 
   final _authService = AuthService();
@@ -325,6 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _forgotPin() {
     setState(() {
+      _cameFromForgotPin = true;
       _isReturningUser = false;
       _passwordController.clear();
     });
@@ -352,6 +355,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final bool isDriver    = results[0].exists;
     final bool isCabDriver = results[1].exists;
     final bool isBusiness  = results[2].exists;
+
+    // Existing account logged in by SMS: make sure it has a working PIN.
+    if ((isBusiness || isDriver || isCabDriver) &&
+        (_cameFromForgotPin || !userHasPin(user))) {
+      await promptSetPin(context, user, isReset: _cameFromForgotPin);
+      _cameFromForgotPin = false;
+      if (!mounted) return;
+    }
 
     // Release the guard just before navigation so AppLaunchCoordinator
     // doesn't interfere while we pushAndRemoveUntil.

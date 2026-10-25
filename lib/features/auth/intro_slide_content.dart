@@ -12,7 +12,7 @@ const Color kIntroInk = Color(0xFF111111);
 const String kIntroFont = 'Helvetica';
 
 /// Residual income tiers shown on the Commission Structure slide.
-/// Keep in line with the company rule: % of the profit GoOuts makes,
+/// Drivers: % of base fare. Venues: % of GoOuts net commission,
 /// paid for up to 2 years.
 class IntroCommissionTier {
   final String tier;
@@ -299,7 +299,7 @@ class IntroSlideView extends StatelessWidget {
         _table(),
         const SizedBox(height: 8),
         const Text(
-          'Paid for up to 2 years* on qualifying referrals',
+          'Venues: % of GoOuts net commission. Paid for up to 2 years*',
           style: TextStyle(
             fontFamily: kIntroFont,
             fontSize: 11,
@@ -386,7 +386,7 @@ class IntroSlideView extends StatelessWidget {
                       ),
                     ),
                     const Text(
-                      'of GoOuts profit',
+                      'of base fare',
                       style: TextStyle(
                         fontFamily: kIntroFont,
                         fontSize: 8.5,
