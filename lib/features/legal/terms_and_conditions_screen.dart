@@ -276,7 +276,7 @@ class _BuiltInTerms extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _lastUpdated('October 2026'),
+        _lastUpdated('November 2026'),
         const SizedBox(height: 16),
 
         // ── Important Notice ─────────────────────────────────────────────
@@ -465,6 +465,15 @@ class _BuiltInTerms extends StatelessWidget {
           'income on the net commission GoOuts keeps from that business. For '
           'drivers you refer, you earn residual income on their base fare '
           'earnings only. No sign up bonus is paid for referring a driver.',
+        ),
+        _subTitle('Only if and when GoOuts goes live'),
+        _body(
+          'GoOuts has not launched yet. The sign up bonus and residual income '
+          'are only paid if and when GoOuts goes live and genuine customer '
+          'sales take place through GoOuts. If, due to any unforeseen '
+          'circumstances, GoOuts does not go live, no sign up bonus or '
+          'residual income is payable and you will have no claim against '
+          'GoOuts for it.',
         ),
         _subTitle('When a business counts as live and operational'),
         _body(

@@ -630,24 +630,25 @@ class RoleSelectionScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            return SingleChildScrollView(
+            // Fits on one screen on every phone: content is sized for a
+            // normal phone and FittedBox scales it down on small screens,
+            // so nothing scrolls (7 Nov 2026).
+            final double w = (constraints.maxWidth - 48).clamp(0.0, 360.0);
+            return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48,
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 360),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: SizedBox(
+                    width: w,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const SizedBox(height: 32),
                         Center(
                           child: Image.asset(
                             'assets/logo/goouts_logo_white.png',
-                            height: 180,
+                            height: 110,
                             fit: BoxFit.contain,
                             color: _goOutsBlue,
                             errorBuilder: (_, __, ___) => const Icon(

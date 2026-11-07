@@ -513,10 +513,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
+                          // Brand G in GoOuts blue (was the white 3D icon).
                           Image.asset(
-                            'assets/logo/role_icon.png',
-                            height: 190,
+                            'assets/logo/goouts_logo_white.png',
+                            height: 150,
                             fit: BoxFit.contain,
+                            color: const Color(0xFF0392CA),
                           ),
                           SizedBox(height: 20),
                           AutoSizeText(

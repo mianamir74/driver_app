@@ -238,6 +238,16 @@ class FaqScreen extends StatelessWidget {
     ),
     _FaqItem(
       category: 'Earnings',
+      question: 'When do bonuses and residual income start?',
+      answer:
+          'Only if and when GoOuts goes live and genuine customer sales take '
+          'place. GoOuts has not launched yet. If, due to any unforeseen '
+          'circumstances, GoOuts does not go live, no sign up bonus or '
+          'residual income is payable. See section 6 of the Terms and '
+          'Conditions.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
       question: 'Can GoOuts change the bonus or residual income programme?',
       answer:
           'Yes. GoOuts may change, extend, suspend or end the programme by '
