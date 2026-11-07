@@ -167,6 +167,19 @@ class FaqScreen extends StatelessWidget {
     ),
     _FaqItem(
       category: 'Referrals',
+      question: 'How do I sign up a business?',
+      answer:
+          'Tap Sign Up a Business on your home screen and fill in the form '
+          'with the owner or manager: the business details, their contact '
+          'details and a photo of the shop front. GoOuts checks it and you can '
+          'follow its progress in My Businesses. You earn £25 once the '
+          'business is live and has completed 3 genuine customer transactions '
+          'within 90 days, plus residual income on the net commission GoOuts '
+          'keeps from it. Only the first person to sign up a business is '
+          'credited. Lead Partners recruit drivers only.',
+    ),
+    _FaqItem(
+      category: 'Referrals',
       question: 'Where do I find my referral code?',
       answer:
           'It is on your home screen and in the referrals section. Tap it to '
@@ -208,8 +221,29 @@ class FaqScreen extends StatelessWidget {
           'refer, and a percentage of the NET COMMISSION GoOuts keeps from each venue '
           'you introduce (GoOuts commission minus the cashback rewards given to '
           'customers). GoOuts pays it from its own share, so nothing is ever taken '
-          'from the driver or the venue. The same rules apply to drivers and to '
-          'Lead Partners.',
+          'from the driver or the venue. Lead Partners earn the same residual '
+          'income on the drivers they refer.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
+      question: 'Do I get a £25 bonus for every referral?',
+      answer:
+          'No. The £25 sign up bonus is only for business partners (venues). '
+          'It is paid once the business is live and has completed 3 genuine '
+          'customer transactions within 90 days of the later of GoOuts '
+          'launching in its area or the business going live. You also earn '
+          'tier based residual income on the net commission GoOuts keeps from '
+          'that business. For drivers you refer there is no sign up bonus: you '
+          'earn tier based residual income on their base fare earnings only.',
+    ),
+    _FaqItem(
+      category: 'Earnings',
+      question: 'Can GoOuts change the bonus or residual income programme?',
+      answer:
+          'Yes. GoOuts may change, extend, suspend or end the programme by '
+          'giving at least 30 days notice in the app or by email. Anything you '
+          'have already qualified for before the change takes effect is still '
+          'paid under the old rules.',
     ),
     _FaqItem(
       category: 'Earnings',
@@ -286,10 +320,10 @@ class FaqScreen extends StatelessWidget {
       category: 'Account',
       question: 'How do I log in?',
       answer:
-          'GoOuts uses your phone number rather than a password. Enter your '
-          'number on the login screen and we send you a single use code by text. '
-          'Enter that code and you are in. There is no password to remember and '
-          'nothing to reset.',
+          'Enter your mobile number and your 4 digit PIN on the login screen. '
+          'The first time, or if you forget your PIN, tap Forgot PIN? and we '
+          'send you a single use code by text. Enter the code and the app asks '
+          'you to set a new PIN.',
     ),
     _FaqItem(
       category: 'Account',

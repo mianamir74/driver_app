@@ -1,7 +1,7 @@
 name: driver_app
 description: Goouts driver app
 publish_to: 'none'
-version: 1.0.0+42
+version: 1.1.0+43
 
 environment:
   sdk: ^3.9.0
@@ -16,6 +16,7 @@ dependencies:
   firebase_messaging: ^16.0.0
   firebase_storage: ^13.0.0
   cloud_functions: ^6.3.3
+  qr_flutter: ^4.1.0
   image: ^4.1.7 # on-device KYC quality scoring (selfie + ID document inspectors)
   # Face checks on the KYC selfie — presence, eye closure, head pose, occlusion.
   # Free, on-device, offline, no licence key and no per-package binding, which

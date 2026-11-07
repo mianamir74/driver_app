@@ -15,6 +15,7 @@ import '../profile/driver_profile_screen.dart';
 import '../referral/referral_link_screen.dart';
 import '../referral/referral_list_screen.dart';
 import '../support/help_support_screen.dart';
+import '../venues/my_businesses.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:driver_app/features/common/goouts_sheet.dart';
 import 'package:driver_app/services/fcm_service.dart';
@@ -1186,6 +1187,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                           totalReferralsCount: _totalReferralsCount,
                           accountStatus: (data?['status'] ?? '').toString(),
                         ),
+                        // Version 1.1: drivers sign up local venues.
+                        const SizedBox(height: 20),
+                        SignUpBusinessPanel(collection: account.collection),
                         SizedBox(height: 24),
                         AutoSizeText(
                           'Quick Actions',
@@ -1221,9 +1225,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                             _buildQuickActionCard(
                               context: context,
                               icon: Icons.person_add_rounded,
-                              title: 'Sign Up Drivers',
+                              title: 'Invite Drivers',
                               subtitle:
-                                  'Recruit new drivers and grow your team',
+                                  'Send WhatsApp invites and follow them up',
                               iconColor: const Color(0xFF0392CA),
                               iconBgColor:
                                   const Color(0xFF0392CA).withValues(alpha: 0.1),

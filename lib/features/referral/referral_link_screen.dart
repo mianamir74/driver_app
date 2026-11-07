@@ -363,7 +363,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
           "I'm a Lead Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
           "GoOuts is expanding and looking for drivers who want flexible delivery work with a simple onboarding process.\n\n"
           "You can also earn additional income by inviting other drivers once you join.\n\n"
-          "Please download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
+          "Please download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
           "$inviteLink";
@@ -374,7 +374,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
           "I've joined GoOuts Rider Driver, a new platform launching soon with a strong residual income model for drivers.\n\n"
           "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
           "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
-          "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
+          "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
           "$inviteLink";
@@ -384,7 +384,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
         "I've joined GoOuts Food Delivery, a new platform launching soon with a strong residual income model for drivers.\n\n"
         "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
         "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
-        "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
+        "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
         "$referralCode\n\n"
         "Complete your signup here:\n"
         "$inviteLink";
@@ -404,7 +404,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
           "I'm a Lead Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
           "GoOuts is expanding and looking for drivers who want flexible delivery work with a simple onboarding process.\n\n"
           "You can also earn additional income by inviting other drivers once you join.\n\n"
-          "Please download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
+          "Please download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
           "[Invite Link will be added automatically]";
@@ -415,7 +415,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
           "I've joined GoOuts Rider Driver, a new platform launching soon with a strong residual income model for drivers.\n\n"
           "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
           "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
-          "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
+          "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
           "[Invite Link will be added automatically]";
@@ -425,7 +425,7 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
         "I've joined GoOuts Food Delivery, a new platform launching soon with a strong residual income model for drivers.\n\n"
         "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
         "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
-        "Download the GoOuts Driver Registration app and enter this referral code during registration:\n\n"
+        "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
         "$referralCode\n\n"
         "Complete your signup here:\n"
         "[Invite Link will be added automatically]";

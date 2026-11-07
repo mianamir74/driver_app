@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
@@ -142,8 +143,131 @@ class TermsAndConditionsScreen extends StatelessWidget {
   }
 }
 
-class _TermsContent extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+//  Live terms from the admin panel. Added 25 October 2026.
+//
+//  The admin panel's Lead App Terms page publishes legal_documents/lead_terms
+//  (readable by anyone, so the terms show before sign up). When it has text,
+//  that text is shown, so a wording change needs no new app build. When it is
+//  empty or cannot be loaded (no signal), the built-in copy below is shown.
+//
+//  Simple markup: "## " section title, "### " sub title, "- " bullet,
+//  anything else a paragraph. Blank lines separate blocks.
+// ─────────────────────────────────────────────────────────────────────────────
+class _TermsContent extends StatefulWidget {
   const _TermsContent();
+
+  @override
+  State<_TermsContent> createState() => _TermsContentState();
+}
+
+class _TermsContentState extends State<_TermsContent> {
+  late final Future<String> _live = _load();
+
+  Future<String> _load() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('legal_documents')
+          .doc('lead_terms')
+          .get()
+          .timeout(const Duration(seconds: 6));
+      final d = snap.data();
+      if (d == null || d['published'] != true) return '';
+      return (d['terms'] ?? '').toString().trim();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _live,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 60),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        final text = snap.data ?? '';
+        if (text.isEmpty) return const _BuiltInTerms();
+        return _LiveTerms(text: text);
+      },
+    );
+  }
+}
+
+class _LiveTerms extends StatelessWidget {
+  const _LiveTerms({required this.text});
+  final String text;
+
+  static const Color _blue = Color(0xFF0392CA);
+
+  @override
+  Widget build(BuildContext context) {
+    final blocks = text
+        .replaceAll('\r\n', '\n')
+        .split(RegExp(r'\n\s*\n'))
+        .map((b) => b.trim())
+        .where((b) => b.isNotEmpty);
+    final children = <Widget>[];
+    for (final b in blocks) {
+      if (b.startsWith('### ')) {
+        children.add(Padding(
+          padding: const EdgeInsets.only(top: 10, bottom: 6),
+          child: Text(b.substring(4),
+              style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1C))),
+        ));
+      } else if (b.startsWith('## ')) {
+        children.add(Padding(
+          padding: const EdgeInsets.only(top: 22, bottom: 8),
+          child: Text(b.substring(3),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: _blue)),
+        ));
+      } else if (b.startsWith('- ')) {
+        children.add(Padding(
+          padding: const EdgeInsets.only(bottom: 6, left: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('•  ',
+                  style: TextStyle(
+                      fontSize: 14, height: 1.55, color: _blue)),
+              Expanded(
+                child: Text(b.substring(2),
+                    style: const TextStyle(
+                        fontSize: 14,
+                        height: 1.55,
+                        color: Color(0xFF374151))),
+              ),
+            ],
+          ),
+        ));
+      } else {
+        children.add(Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(b,
+              style: const TextStyle(
+                  fontSize: 14, height: 1.6, color: Color(0xFF374151))),
+        ));
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    );
+  }
+}
+
+class _BuiltInTerms extends StatelessWidget {
+  const _BuiltInTerms();
 
   static const Color _goOutsBlue = Color(0xFF0392CA);
 
@@ -337,8 +461,10 @@ class _TermsContent extends StatelessWidget {
         _sectionTitle('6. Sign Up Bonus and Residual Income'),
         _body(
           'You can earn a one time sign up bonus of £25 for each business '
-          'partner you successfully sign up to GoOuts, plus residual income '
-          'on the activity of the businesses and drivers you refer.',
+          'partner (venue) you successfully sign up to GoOuts, plus residual '
+          'income on the net commission GoOuts keeps from that business. For '
+          'drivers you refer, you earn residual income on their base fare '
+          'earnings only. No sign up bonus is paid for referring a driver.',
         ),
         _subTitle('When a business counts as live and operational'),
         _body(
@@ -355,16 +481,18 @@ class _TermsContent extends StatelessWidget {
         ),
         _bullet(
           'The business has completed a minimum of 3 genuine customer '
-          'transactions through GoOuts within 90 days of its sign up date.',
+          'transactions through GoOuts within 90 days of the later of: (a) '
+          'the date GoOuts launches in the business\u2019s area, or (b) the '
+          'date the business goes live on GoOuts.',
         ),
         _body(
-          'The £25 sign up bonus is only paid once the business partner is '
-          'live and successfully operational as described above. You can '
-          'follow the status of each business you signed up in the App.',
+          'The £25 sign up bonus is paid once the business partner is live '
+          'and successfully operational as described above. You can follow '
+          'the status of each business you signed up in the App.',
         ),
         _body(
-          'If a business does not reach 3 transactions within 90 days of its '
-          'sign up date, no sign up bonus is paid for that business. Any '
+          'If a business does not reach 3 genuine transactions within that '
+          '90 day period, no sign up bonus is paid for that business. Any '
           'residual income from its later activity is not affected.',
         ),
         _subTitle('How residual income is calculated'),
@@ -403,6 +531,11 @@ class _TermsContent extends StatelessWidget {
         ),
         _subTitle('Other bonus and residual income rules'),
         _bullet(
+          'The £25 sign up bonus applies to business partners (venues) only. '
+          'Driver referrals, including drivers referred by Lead Partners, '
+          'earn tier based residual income only.',
+        ),
+        _bullet(
           'The bonus is paid once per business partner. A business that is '
           'already registered with GoOuts, or that was signed up by someone '
           'else first, does not qualify.',
@@ -418,6 +551,19 @@ class _TermsContent extends StatelessWidget {
         _bullet(
           'GoOuts may withhold or reverse any bonus or residual income linked '
           'to fake, duplicate or fraudulent sign ups or transactions.',
+        ),
+        _bullet(
+          'The residual income promotion for drivers is open to the first '
+          '5,000 approved drivers. GoOuts may increase this number at any '
+          'time. It does not apply to Lead Partners.',
+        ),
+        _bullet(
+          'GoOuts may change, extend, suspend or end the sign up bonus and '
+          'residual income programme, or any part of it, at any time by '
+          'giving at least 30 days\u2019 notice in the App or by email. Any '
+          'bonus or residual income you have already qualified for before the '
+          'change takes effect will still be paid under the rules that '
+          'applied at that time.',
         ),
 
         // ── 7. Suspension & Termination ───────────────────────────────────

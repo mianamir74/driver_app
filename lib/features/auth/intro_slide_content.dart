@@ -42,6 +42,7 @@ class IntroSlideData {
   final List<IntroLine> above; // lines above the blue divider
   final List<IntroLine> below; // lines below the blue divider
   final bool isCommission;
+  final String? smallNote; // optional small line under the body text
 
   const IntroSlideData({
     required this.titleTop,
@@ -50,6 +51,7 @@ class IntroSlideData {
     this.above = const [],
     this.below = const [],
     this.isCommission = false,
+    this.smallNote,
   });
 }
 
@@ -70,6 +72,20 @@ class IntroSlides {
     art: '${_p}become_partner_business.webp',
     above: [IntroLine('Join GoOuts and earn money')],
     below: [IntroLine('by signing up new delivery drivers')],
+  );
+
+  // Added 25 October 2026 for version 1.1: drivers signing up local venues.
+  // Drivers only; Lead Partners recruit drivers, not businesses.
+  static const signUpBusinesses = IntroSlideData(
+    titleTop: 'SIGN UP',
+    titleBottom: 'BUSINESSES',
+    art: '${_p}sign_up_business.webp',
+    above: [IntroLine('Earn £25* for every venue')],
+    below: [
+      IntroLine('that goes live, plus up to 5%*'),
+      IntroLine('residual income for 2 years*'),
+    ],
+    smallNote: 'Earn up to £3,000 a year*',
   );
 
   static const inviteFriends = IntroSlideData(
@@ -102,8 +118,12 @@ class IntroSlides {
     titleTop: 'LIMITED',
     titleBottom: 'PROMOTION',
     art: '${_p}limited_promo.webp',
-    above: [IntroLine('First 5000 signups')],
-    below: [IntroLine('qualify for extra'), IntroLine('benefits*')],
+    above: [IntroLine('Only the first 5,000 drivers')],
+    below: [
+      IntroLine('qualify for our residual'),
+      IntroLine('income promotion*'),
+    ],
+    smallNote: 'Be one of the first. Sign up today!',
   );
 
   static const moreOpportunities = IntroSlideData(
@@ -134,6 +154,7 @@ class IntroSlides {
   static const List<IntroSlideData> driver = [
     becomePartnerDriver,
     inviteFriends,
+    signUpBusinesses,
     commission,
     growNetwork,
     limitedPromo,
@@ -236,6 +257,18 @@ class IntroSlideView extends StatelessWidget {
         _divider(),
         const SizedBox(height: 6),
         ...slide.below.map(_line),
+        if (slide.smallNote != null) ...[
+          const SizedBox(height: 14),
+          Text(
+            slide.smallNote!,
+            style: const TextStyle(
+              fontFamily: kIntroFont,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: kIntroBlue,
+            ),
+          ),
+        ],
         const Spacer(),
         _pill(),
         const SizedBox(height: 42),
