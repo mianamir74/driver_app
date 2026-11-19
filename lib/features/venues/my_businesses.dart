@@ -34,13 +34,14 @@ _VenueStatus _statusOf(Map<String, dynamic> r) {
   final status = (r['status'] ?? 'submitted').toString();
   final tx = (r['txCount'] as num?)?.toInt() ?? 0;
   final need = (r['requiredTransactions'] as num?)?.toInt() ?? 3;
-  final amount = (r['bonusAmount'] as num?)?.toInt() ?? 25;
+  final amount = (r['bonusAmount'] as num?)?.toInt() ?? 0;
   switch (status) {
     case 'qualified':
       return _VenueStatus('£$amount earned', '$need of $need transactions',
           const Color(0xFF1B8F3A), const Color(0xFFE8F5E9));
     case 'live':
-      return _VenueStatus('Live', '$tx of $need transactions',
+      return _VenueStatus('Live',
+          amount > 0 ? '$tx of $need transactions' : 'Earning residual income',
           const Color(0xFF0B6FB0), const Color(0xFFE3F2FD));
     case 'approved':
       return const _VenueStatus('Approved', 'Going live soon',
@@ -49,7 +50,7 @@ _VenueStatus _statusOf(Map<String, dynamic> r) {
       return const _VenueStatus('Not accepted', 'GoOuts could not accept it',
           Color(0xFFB42318), Color(0xFFFEE4E2));
     case 'expired':
-      return _VenueStatus('No bonus', 'Did not reach $need transactions in time',
+      return _VenueStatus('Live', 'Promotion ended, residual income continues',
           const Color(0xFF555555), const Color(0xFFF1F3F5));
     default:
       return _VenueStatus(
@@ -148,7 +149,7 @@ class SignUpBusinessPanel extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                               color: Colors.white)),
                       SizedBox(height: 2),
-                      Text('£25 bonus + residual on every venue',
+                      Text('Residual income on every venue you sign',
                           style: TextStyle(fontSize: 12.5, color: Colors.white)),
                     ]),
               ),
@@ -441,9 +442,10 @@ class MyBusinessesScreen extends StatelessWidget {
                       _VenueCard(title: 'All businesses', docs: docs),
                     const SizedBox(height: 12),
                     const Text(
-                      'You earn the £25 bonus once a business is live and has '
-                      'completed 3 genuine customer transactions within 90 '
-                      'days of going live. T&Cs apply.',
+                      'You earn residual income on the net commission GoOuts '
+                      'keeps from each business once it is live. Any limited '
+                      'time sign up promotion is shown here while it runs. '
+                      'T&Cs apply.',
                       style: TextStyle(fontSize: 12, color: _muted, height: 1.5),
                     ),
                   ],

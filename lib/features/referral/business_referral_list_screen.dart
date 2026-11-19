@@ -313,13 +313,13 @@ class _BusinessReferralListScreenState extends State<BusinessReferralListScreen>
       if (inviteLink.trim().isEmpty) {
         return 'Hi $safeName,\n\n'
             'I’d like to remind you about joining GoOuts as a delivery driver.\n\n'
-            'Please use my business partner referral code during registration:\n\n'
+            'Please use my Lead Partner referral code when you register in the GoOuts Lead app:\n\n'
             '$referralCode';
       }
 
       return 'Hi $safeName,\n\n'
           'I’d like to remind you about joining GoOuts as a delivery driver.\n\n'
-          'Please use my business partner referral code during registration:\n\n'
+          'Please use my Lead Partner referral code when you register in the GoOuts Lead app:\n\n'
           '$referralCode\n\n'
           'Complete your signup here:\n'
           '$inviteLink';
@@ -327,13 +327,13 @@ class _BusinessReferralListScreenState extends State<BusinessReferralListScreen>
 
     if (inviteLink.trim().isEmpty) {
       return 'Hi $safeName,\n\n'
-          'This is a reminder to join GoOuts Food Delivery.\n\n'
+          'This is a reminder to join GoOuts as a driver before we launch. Residual income is for the first 5,000 drivers.\n\n'
           'Please use my referral code during registration:\n\n'
           '$referralCode';
     }
 
     return 'Hi $safeName,\n\n'
-        'This is a reminder to join GoOuts Food Delivery.\n\n'
+        'This is a reminder to join GoOuts as a driver before we launch. Residual income is for the first 5,000 drivers.\n\n'
         'Please use my referral code during registration:\n\n'
         '$referralCode\n\n'
         'Complete your signup here:\n'

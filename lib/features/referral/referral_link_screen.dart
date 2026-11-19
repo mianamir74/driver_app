@@ -360,9 +360,8 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     if (isBusiness) {
       return "Hi $safeName,\n\n"
-          "I'm a Lead Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
-          "GoOuts is expanding and looking for drivers who want flexible delivery work with a simple onboarding process.\n\n"
-          "You can also earn additional income by inviting other drivers once you join.\n\n"
+          "I'm a Lead Partner with GoOuts, London's new Instant Cashback Rewards platform, launching soon, and I'd like to invite you to join as a driver.\n\n"
+          "Join early to be first in line for flexible delivery work when GoOuts goes live, and earn residual income by signing up local venues and inviting other drivers (first 5,000 drivers, T&Cs apply).\n\n"
           "Please download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
@@ -371,9 +370,9 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     if (isCabDriver) {
       return "Hi $safeName,\n\n"
-          "I've joined GoOuts Rider Driver, a new platform launching soon with a strong residual income model for drivers.\n\n"
-          "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
-          "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
+          "I've joined GoOuts, London's new Instant Cashback Rewards platform, launching soon, with a strong residual income model for drivers.\n\n"
+          "Sign up local cafes, restaurants and pubs, and invite other drivers. You can earn up to 5% of your referred drivers' base fare earnings and of GoOuts' net commission from the venues you introduce, for up to 2 years, and track everything from your dashboard.\n\n"
+          "Residual income is for the first 5,000 drivers only, so secure your spot early - if you don't invite them, someone else will. T&Cs apply: goouts.co.uk/lead-terms\n\n"
           "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
@@ -381,9 +380,9 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
     }
 
     return "Hi $safeName,\n\n"
-        "I've joined GoOuts Food Delivery, a new platform launching soon with a strong residual income model for drivers.\n\n"
-        "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
-        "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
+        "I've joined GoOuts, London's new Instant Cashback Rewards platform, launching soon, with a strong residual income model for drivers.\n\n"
+        "Sign up local cafes, restaurants and pubs, and invite other drivers. You can earn up to 5% of your referred drivers' base fare earnings and of GoOuts' net commission from the venues you introduce, for up to 2 years, and track everything from your dashboard.\n\n"
+        "Residual income is for the first 5,000 drivers only, so secure your spot early - if you don't invite them, someone else will. T&Cs apply: goouts.co.uk/lead-terms\n\n"
         "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
         "$referralCode\n\n"
         "Complete your signup here:\n"
@@ -401,9 +400,8 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     if (isBusiness) {
       return "Hi $safeName,\n\n"
-          "I'm a Lead Partner with GoOuts and I'd like to invite you to join as a food delivery driver.\n\n"
-          "GoOuts is expanding and looking for drivers who want flexible delivery work with a simple onboarding process.\n\n"
-          "You can also earn additional income by inviting other drivers once you join.\n\n"
+          "I'm a Lead Partner with GoOuts, London's new Instant Cashback Rewards platform, launching soon, and I'd like to invite you to join as a driver.\n\n"
+          "Join early to be first in line for flexible delivery work when GoOuts goes live, and earn residual income by signing up local venues and inviting other drivers (first 5,000 drivers, T&Cs apply).\n\n"
           "Please download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
@@ -412,9 +410,9 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
 
     if (isCabDriver) {
       return "Hi $safeName,\n\n"
-          "I've joined GoOuts Rider Driver, a new platform launching soon with a strong residual income model for drivers.\n\n"
-          "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
-          "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
+          "I've joined GoOuts, London's new Instant Cashback Rewards platform, launching soon, with a strong residual income model for drivers.\n\n"
+          "Sign up local cafes, restaurants and pubs, and invite other drivers. You can earn up to 5% of your referred drivers' base fare earnings and of GoOuts' net commission from the venues you introduce, for up to 2 years, and track everything from your dashboard.\n\n"
+          "Residual income is for the first 5,000 drivers only, so secure your spot early - if you don't invite them, someone else will. T&Cs apply: goouts.co.uk/lead-terms\n\n"
           "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
           "$referralCode\n\n"
           "Complete your signup here:\n"
@@ -422,9 +420,9 @@ class _ReferralLinkScreenState extends State<ReferralLinkScreen> {
     }
 
     return "Hi $safeName,\n\n"
-        "I've joined GoOuts Food Delivery, a new platform launching soon with a strong residual income model for drivers.\n\n"
-        "You can earn up to 5% of your referrals' base fare earnings (and of GoOuts' net commission from venues you introduce), for up to 2 years, grow your portfolio automatically, and track everything from your dashboard.\n\n"
-        "Secure your spot early and start inviting friends - because if you don't invite them, someone else will.\n\n"
+        "I've joined GoOuts, London's new Instant Cashback Rewards platform, launching soon, with a strong residual income model for drivers.\n\n"
+        "Sign up local cafes, restaurants and pubs, and invite other drivers. You can earn up to 5% of your referred drivers' base fare earnings and of GoOuts' net commission from the venues you introduce, for up to 2 years, and track everything from your dashboard.\n\n"
+        "Residual income is for the first 5,000 drivers only, so secure your spot early - if you don't invite them, someone else will. T&Cs apply: goouts.co.uk/lead-terms\n\n"
         "Download the GoOuts Lead app and enter this referral code during registration:\n\n"
         "$referralCode\n\n"
         "Complete your signup here:\n"

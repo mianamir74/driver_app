@@ -80,12 +80,12 @@ class IntroSlides {
     titleTop: 'SIGN UP',
     titleBottom: 'BUSINESSES',
     art: '${_p}sign_up_business.webp',
-    above: [IntroLine('Earn £25* for every venue')],
+    above: [IntroLine('Sign up local venues')],
     below: [
-      IntroLine('that goes live, plus up to 5%*'),
-      IntroLine('residual income for 2 years*'),
+      IntroLine('and earn up to 5%* residual'),
+      IntroLine('income for up to 2 years*'),
     ],
-    smallNote: 'Earn up to £3,000 a year*',
+    smallNote: '*T&Cs apply',
   );
 
   static const inviteFriends = IntroSlideData(

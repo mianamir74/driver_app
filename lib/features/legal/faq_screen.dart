@@ -172,10 +172,8 @@ class FaqScreen extends StatelessWidget {
           'Tap Sign Up a Business on your home screen and fill in the form '
           'with the owner or manager: the business details, their contact '
           'details and a photo of the shop front. GoOuts checks it and you can '
-          'follow its progress in My Businesses. You earn £25 once the '
-          'business is live and has completed 3 genuine customer transactions '
-          'within 90 days, plus residual income on the net commission GoOuts '
-          'keeps from it. Only the first person to sign up a business is '
+          'follow its progress in My Businesses. Once it is live you earn '
+          'residual income on the net commission GoOuts keeps from it. Only the first person to sign up a business is '
           'credited. Lead Partners recruit drivers only.',
     ),
     _FaqItem(
@@ -226,15 +224,13 @@ class FaqScreen extends StatelessWidget {
     ),
     _FaqItem(
       category: 'Earnings',
-      question: 'Do I get a £25 bonus for every referral?',
+      question: 'Is there a sign up bonus for each venue?',
       answer:
-          'No. The £25 sign up bonus is only for business partners (venues). '
-          'It is paid once the business is live and has completed 3 genuine '
-          'customer transactions within 90 days of the later of GoOuts '
-          'launching in its area or the business going live. You also earn '
-          'tier based residual income on the net commission GoOuts keeps from '
-          'that business. For drivers you refer there is no sign up bonus: you '
-          'earn tier based residual income on their base fare earnings only.',
+          'Not as standard. You earn tier based residual income on the net '
+          'commission GoOuts keeps from each venue you sign up, and on the '
+          'base fare earnings of drivers you refer. From time to time GoOuts '
+          'may run a limited time sign up promotion. When one runs, the '
+          'amount, conditions and end date are shown in the app.',
     ),
     _FaqItem(
       category: 'Earnings',

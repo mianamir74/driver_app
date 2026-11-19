@@ -458,21 +458,23 @@ class _BuiltInTerms extends StatelessWidget {
         ),
 
         // ── 6. Sign Up Bonus and Residual Income ─────────────────────────
-        _sectionTitle('6. Sign Up Bonus and Residual Income'),
+        _sectionTitle('6. Residual Income and Sign Up Promotions'),
         _body(
-          'You can earn a one time sign up bonus of £25 for each business '
-          'partner (venue) you successfully sign up to GoOuts, plus residual '
-          'income on the net commission GoOuts keeps from that business. For '
-          'drivers you refer, you earn residual income on their base fare '
-          'earnings only. No sign up bonus is paid for referring a driver.',
+          'You can earn residual income on the net commission GoOuts keeps '
+          'from each business partner (venue) you successfully sign up to '
+          'GoOuts. For drivers you refer, you earn residual income on their '
+          'base fare earnings only. There is no standard sign up bonus. GoOuts '
+          'may, at its discretion, run limited time sign up promotions; the '
+          'amount, conditions and end date of any promotion are shown in the '
+          'App while it runs.',
         ),
         _subTitle('Only if and when GoOuts goes live'),
         _body(
-          'GoOuts has not launched yet. The sign up bonus and residual income '
+          'GoOuts has not launched yet. Residual income and any promotion reward '
           'are only paid if and when GoOuts goes live and genuine customer '
           'sales take place through GoOuts. If, due to any unforeseen '
-          'circumstances, GoOuts does not go live, no sign up bonus or '
-          'residual income is payable and you will have no claim against '
+          'circumstances, GoOuts does not go live, no residual income or '
+          'promotion reward is payable and you will have no claim against '
           'GoOuts for it.',
         ),
         _subTitle('When a business counts as live and operational'),
@@ -495,13 +497,14 @@ class _BuiltInTerms extends StatelessWidget {
           'date the business goes live on GoOuts.',
         ),
         _body(
-          'The £25 sign up bonus is paid once the business partner is live '
-          'and successfully operational as described above. You can follow '
+          'Where a sign up promotion is running when you submit a business, '
+          'its reward is paid once the business partner is live and '
+          'successfully operational as described above. You can follow '
           'the status of each business you signed up in the App.',
         ),
         _body(
           'If a business does not reach 3 genuine transactions within that '
-          '90 day period, no sign up bonus is paid for that business. Any '
+          '90 day period, no promotion reward is paid for that business. Any '
           'residual income from its later activity is not affected.',
         ),
         _subTitle('How residual income is calculated'),
@@ -540,12 +543,13 @@ class _BuiltInTerms extends StatelessWidget {
         ),
         _subTitle('Other bonus and residual income rules'),
         _bullet(
-          'The £25 sign up bonus applies to business partners (venues) only. '
-          'Driver referrals, including drivers referred by Lead Partners, '
-          'earn tier based residual income only.',
+          'Sign up promotions, when running, apply to business partners '
+          '(venues) only, and only to businesses submitted while the promotion '
+          'runs. Driver referrals, including drivers referred by Lead '
+          'Partners, earn tier based residual income only.',
         ),
         _bullet(
-          'The bonus is paid once per business partner. A business that is '
+          'A promotion reward is paid once per business partner. A business that is '
           'already registered with GoOuts, or that was signed up by someone '
           'else first, does not qualify.',
         ),
@@ -554,8 +558,8 @@ class _BuiltInTerms extends StatelessWidget {
           'and drivers you refer and is not guaranteed.',
         ),
         _bullet(
-          'Any "up to £3,000 a year" figure is the combined maximum of sign up '
-          'bonuses and residual income. Your actual earnings may be lower.',
+          'Any earnings figure shown by GoOuts is an example, not a promise. '
+          'Your actual earnings may be lower.',
         ),
         _bullet(
           'GoOuts may withhold or reverse any bonus or residual income linked '
@@ -567,8 +571,8 @@ class _BuiltInTerms extends StatelessWidget {
           'time. It does not apply to Lead Partners.',
         ),
         _bullet(
-          'GoOuts may change, extend, suspend or end the sign up bonus and '
-          'residual income programme, or any part of it, at any time by '
+          'GoOuts may change, extend, suspend or end any sign up promotion and '
+          'the residual income programme, or any part of it, at any time by '
           'giving at least 30 days\u2019 notice in the App or by email. Any '
           'bonus or residual income you have already qualified for before the '
           'change takes effect will still be paid under the rules that '

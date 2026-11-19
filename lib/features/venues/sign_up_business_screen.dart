@@ -74,7 +74,7 @@ class _SignUpBusinessScreenState extends State<SignUpBusinessScreen> {
   final _role = TextEditingController(text: 'Owner');
   final _phone = TextEditingController();
   final _email = TextEditingController();
-  final _cashback = TextEditingController(text: '5');
+  final _cashback = TextEditingController(text: '3');
   final _hours = TextEditingController();
   final _notes = TextEditingController();
 
@@ -307,9 +307,8 @@ class _SignUpBusinessScreenState extends State<SignUpBusinessScreen> {
                     borderRadius: BorderRadius.circular(12)),
                 child: const Text(
                   'Fill this in with the owner or manager. You are credited '
-                  'as the introducer: £25 once the business is live and has '
-                  '3 genuine customer transactions, plus residual income. '
-                  'T&Cs apply.',
+                  'as the introducer and earn residual income once the '
+                  'business is live. T&Cs apply.',
                   style: TextStyle(fontSize: 12.5, height: 1.45, color: Color(0xFF0B4F75)),
                 ),
               ),
@@ -398,12 +397,12 @@ class _SignUpBusinessScreenState extends State<SignUpBusinessScreen> {
               if (_selfTerms) ...[
                 _section('Cashback deal',
                     'In the venue, the business chooses the cashback its '
-                        'customers get (5% minimum). GoOuts charges a fixed 5%.'),
+                        'customers get (3% minimum). GoOuts charges a fixed 5%.'),
                 _field(_cashback, 'Customer cashback %',
                     keyboard: const TextInputType.numberWithOptions(decimal: true),
                     check: (t) {
                   final v = double.tryParse(t);
-                  if (v == null || v < 5 || v > 50) return 'Between 5 and 50';
+                  if (v == null || v < 3 || v > 50) return 'Between 3 and 50';
                   return null;
                 }),
                 CheckboxListTile(
