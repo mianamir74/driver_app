@@ -1,0 +1,1104 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../legal/terms_and_conditions_screen.dart';
+import '../../main.dart' show RoleSelectionScreen;
+import '../../utils/kyc_status.dart';
+
+class DriverProfileScreen extends StatefulWidget {
+  const DriverProfileScreen({super.key});
+
+  @override
+  State<DriverProfileScreen> createState() => _DriverProfileScreenState();
+}
+
+class _DriverProfileScreenState extends State<DriverProfileScreen> {
+  static const Color _goOutsBlue = Color(0xFF0392CA);
+  static const Color _screenBackground = Color(0xFFF2F3F7);
+  late final Future<_CurrentAccount?> _accountFuture;
+  bool _deleting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _accountFuture = _loadCurrentAccount();
+  }
+
+  Future<_CurrentAccount?> _loadCurrentAccount() async {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      return null;
+    }
+
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    final Future<DocumentSnapshot<Map<String, dynamic>>> driverFuture =
+        firestore.collection('drivers').doc(currentUser.uid).get();
+    final Future<DocumentSnapshot<Map<String, dynamic>>> businessFuture =
+        firestore.collection('lead_partners').doc(currentUser.uid).get();
+
+    final List<DocumentSnapshot<Map<String, dynamic>>> snapshots =
+        await Future.wait<DocumentSnapshot<Map<String, dynamic>>>(
+      <Future<DocumentSnapshot<Map<String, dynamic>>>>[
+        driverFuture,
+        businessFuture,
+      ],
+    );
+
+    final DocumentSnapshot<Map<String, dynamic>> driverDoc = snapshots[0];
+    final DocumentSnapshot<Map<String, dynamic>> businessDoc = snapshots[1];
+    final Map<String, dynamic>? driverData = driverDoc.data();
+    final Map<String, dynamic>? businessData = businessDoc.data();
+
+    final bool businessLooksValid = businessDoc.exists &&
+        _looksLikeBusinessProfile(businessData);
+    final bool driverLooksValid = driverDoc.exists &&
+        !_looksLikeBusinessProfile(driverData);
+
+    if (businessLooksValid) {
+      return _CurrentAccount(
+        uid: currentUser.uid,
+        collection: 'lead_partners',
+        isBusiness: true,
+      );
+    }
+
+    if (driverLooksValid) {
+      return _CurrentAccount(
+        uid: currentUser.uid,
+        collection: 'drivers',
+        isBusiness: false,
+      );
+    }
+
+    if (businessDoc.exists) {
+      return _CurrentAccount(
+        uid: currentUser.uid,
+        collection: 'lead_partners',
+        isBusiness: true,
+      );
+    }
+
+    if (driverDoc.exists) {
+      return _CurrentAccount(
+        uid: currentUser.uid,
+        collection: 'drivers',
+        isBusiness: false,
+      );
+    }
+
+    return _CurrentAccount(
+      uid: currentUser.uid,
+      collection: 'drivers',
+      isBusiness: false,
+    );
+  }
+
+  bool _looksLikeBusinessProfile(Map<String, dynamic>? data) {
+    if (data == null) {
+      return false;
+    }
+
+    final String accountType =
+        (data['accountType'] ?? '').toString().trim().toLowerCase();
+    final String dashboardRole =
+        (data['dashboardRole'] ?? '').toString().trim().toLowerCase();
+    final String legalBusinessName =
+        (data['legalBusinessName'] ?? '').toString().trim();
+    final String companyNumber =
+        (data['companyNumber'] ?? '').toString().trim();
+    final String referralCode =
+        (data['ownReferralCode'] ?? data['referralCode'] ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+
+    return accountType == 'business' ||
+        dashboardRole == 'business' ||
+        legalBusinessName.isNotEmpty ||
+        companyNumber.isNotEmpty ||
+        referralCode.startsWith('GB');
+  }
+
+  String _readString(
+    Map<String, dynamic>? data,
+    List<String> keys, {
+    String fallback = '',
+  }) {
+    if (data == null) {
+      return fallback;
+    }
+
+    for (final String key in keys) {
+      final dynamic value = data[key];
+      if (value == null) {
+        continue;
+      }
+
+      final String text = value.toString().trim();
+      if (text.isNotEmpty) {
+        return text;
+      }
+    }
+
+    return fallback;
+  }
+
+  String _readNestedString(
+    Map<String, dynamic>? data,
+    List<String> path, {
+    String fallback = '',
+  }) {
+    dynamic current = data;
+
+    for (final String key in path) {
+      if (current is Map<String, dynamic> && current.containsKey(key)) {
+        current = current[key];
+      } else {
+        return fallback;
+      }
+    }
+
+    if (current == null) {
+      return fallback;
+    }
+
+    final String text = current.toString().trim();
+    return text.isEmpty ? fallback : text;
+  }
+
+  bool _readBool(
+    Map<String, dynamic>? data,
+    List<String> keys, {
+    bool fallback = false,
+  }) {
+    if (data == null) {
+      return fallback;
+    }
+
+    for (final String key in keys) {
+      final dynamic value = data[key];
+
+      if (value is bool) {
+        return value;
+      }
+
+      if (value is num) {
+        return value != 0;
+      }
+
+      if (value is String) {
+        final String normalized = value.trim().toLowerCase();
+        if (normalized == 'true') {
+          return true;
+        }
+        if (normalized == 'false') {
+          return false;
+        }
+      }
+    }
+
+    return fallback;
+  }
+
+  String _formatDisplayText(String value) {
+    final String cleaned = value.trim();
+    if (cleaned.isEmpty) {
+      return '';
+    }
+
+    return cleaned
+        .toLowerCase()
+        .split(RegExp(r'\s+'))
+        .map((String word) {
+          if (word.isEmpty) {
+            return word;
+          }
+          return '${word[0].toUpperCase()}${word.substring(1)}';
+        })
+        .join(' ');
+  }
+
+  String _buildDisplayName({
+    required Map<String, dynamic>? data,
+    required User currentUser,
+    required bool isBusiness,
+  }) {
+    if (isBusiness) {
+      final String fullName = _formatDisplayText(
+        _readString(data, const <String>['fullName', 'contactPersonName']),
+      );
+      if (fullName.isNotEmpty) {
+        return fullName;
+      }
+
+      final String firstName = _readString(data, const <String>['firstName']);
+      final String surname = _readString(data, const <String>['surname']);
+      final String nameFromParts = _formatDisplayText('$firstName $surname'.trim());
+      if (nameFromParts.isNotEmpty) {
+        return nameFromParts;
+      }
+
+      final String legalBusinessName = _formatDisplayText(
+        _readString(data, const <String>['legalBusinessName']),
+      );
+      if (legalBusinessName.isNotEmpty) {
+        return legalBusinessName;
+      }
+
+      return 'Lead Partner';
+    }
+
+    final String fullName = _formatDisplayText(
+      _readString(data, const <String>['fullName']),
+    );
+    if (fullName.isNotEmpty) {
+      return fullName;
+    }
+
+    final String firstName = _readString(data, const <String>['firstName']);
+    final String surname = _readString(data, const <String>['surname']);
+    final String nameFromParts = _formatDisplayText('$firstName $surname'.trim());
+    if (nameFromParts.isNotEmpty) {
+      return nameFromParts;
+    }
+
+    return currentUser.phoneNumber?.trim().isNotEmpty == true
+        ? currentUser.phoneNumber!.trim()
+        : 'Driver';
+  }
+
+  String _buildPhoneNumber(Map<String, dynamic>? data, User currentUser) {
+    return _readString(
+      data,
+      const <String>['phone', 'phoneNumber'],
+      fallback: _readNestedString(
+        data,
+        const <String>['contactDetails', 'phoneNumber'],
+        fallback: currentUser.phoneNumber ?? '',
+      ),
+    );
+  }
+
+  String _buildEmail(Map<String, dynamic>? data) {
+    return _readString(
+      data,
+      const <String>['email'],
+      fallback: _readNestedString(data, const <String>['contactDetails', 'email']),
+    );
+  }
+
+  String _buildCity(Map<String, dynamic>? data) {
+    return _formatDisplayText(
+      _readString(
+        data,
+        const <String>['city'],
+        fallback: _readNestedString(data, const <String>['address', 'city']),
+      ),
+    );
+  }
+
+  String _buildCountry(Map<String, dynamic>? data) {
+    return _formatDisplayText(
+      _readString(
+        data,
+        const <String>['country'],
+        fallback: _readNestedString(data, const <String>['contactDetails', 'country']),
+      ),
+    );
+  }
+
+  String _buildPostcode(Map<String, dynamic>? data) {
+    return _readString(
+      data,
+      const <String>['postcode'],
+      fallback: _readNestedString(data, const <String>['address', 'postcode']),
+    ).toUpperCase();
+  }
+
+  String _buildAddressLine(Map<String, dynamic>? data) {
+    final String house = _formatDisplayText(
+      _readString(
+        data,
+        const <String>['houseNoOrName'],
+        fallback: _readNestedString(data, const <String>['address', 'houseNoOrName']),
+      ),
+    );
+    final String street = _formatDisplayText(
+      _readString(
+        data,
+        const <String>['streetName'],
+        fallback: _readNestedString(data, const <String>['address', 'streetName']),
+      ),
+    );
+
+    return '$house $street'.trim();
+  }
+
+  String _buildVehicleType(Map<String, dynamic>? data) {
+    return _formatDisplayText(
+      _readString(
+        data,
+        const <String>['vehicleType'],
+        fallback: _readNestedString(data, const <String>['vehicleDetails', 'vehicleType']),
+      ),
+    );
+  }
+
+  String _buildBusinessName(Map<String, dynamic>? data) {
+    return _formatDisplayText(
+      _readString(data, const <String>['legalBusinessName']),
+    );
+  }
+
+  String _buildCompanyNumber(Map<String, dynamic>? data) {
+    return _readString(data, const <String>['companyNumber']).toUpperCase();
+  }
+
+  String _buildReferralCode({
+    required Map<String, dynamic>? data,
+    required String uid,
+    required bool isBusiness,
+  }) {
+    final String ownCode =
+        _readString(data, const <String>['ownReferralCode', 'referralCode']).toUpperCase();
+    if (ownCode.isNotEmpty && (!isBusiness || ownCode.startsWith('GB'))) {
+      return ownCode;
+    }
+
+    final String cleaned = uid.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
+    if (isBusiness) {
+      if (cleaned.isEmpty) {
+        return 'BG0001';
+      }
+      if (cleaned.length >= 4) {
+        return 'BG${cleaned.substring(cleaned.length - 4)}';
+      }
+      return 'BG${cleaned.padLeft(4, '0')}';
+    }
+
+    if (cleaned.isEmpty) {
+      return 'G01001';
+    }
+    if (cleaned.length >= 6) {
+      return 'GO${cleaned.substring(cleaned.length - 6)}';
+    }
+    return 'GO${cleaned.padLeft(6, '0')}';
+  }
+
+  String _buildVerificationStatus({
+    required Map<String, dynamic>? data,
+    required bool isBusiness,
+  }) {
+    final List<String> keys = isBusiness
+        ? const <String>[
+            'businessProfileVerificationStatus',
+            'businessProfileVerificationBackendStatus',
+          ]
+        : const <String>[
+            'identityVerificationStatus',
+            'identityVerificationBackendStatus',
+          ];
+
+    final String rawStatus =
+        _readString(data, keys, fallback: 'submitted').trim().toLowerCase();
+
+    // ── Routed through utils/kyc_status.dart, 25 August 2026. ───────────────
+    //
+    // This screen was already CORRECT — it accepted 'approved' as well as
+    // 'verified'. business_profile_screen, four files away, did not, and that
+    // is precisely the problem: two screens in one app, each with its own
+    // private list of words, and no way to tell which list was right.
+    //
+    // Behaviour is unchanged. 'success' and 'needs_support' were carried into
+    // the shared parser so nothing is lost. The 'submitted' fallback stays:
+    // an unknown or missing value means WAITING here, not "never started",
+    // because registration always writes a value.
+    switch (kycStatusFrom(rawStatus)) {
+      case KycStatus.approved:
+        return 'verified';
+      case KycStatus.rejected:
+        return 'rejected';
+      case KycStatus.pending:
+      case KycStatus.none:
+        return 'submitted';
+    }
+  }
+
+  String _buildVerificationStatusLabel({
+    required String status,
+    required bool isBusiness,
+  }) {
+    switch (status) {
+      case 'verified':
+        return isBusiness ? 'Business Profile Verified' : 'Verified';
+      case 'rejected':
+        return isBusiness ? 'Business Profile Needs Attention' : 'Verification Failed';
+      default:
+        return isBusiness ? 'Business Profile Under Review' : 'Submitted';
+    }
+  }
+
+  String _buildVerificationDescription({
+    required String status,
+    required bool isBusiness,
+  }) {
+    if (isBusiness) {
+      switch (status) {
+        case 'verified':
+          return 'Your business profile is verified.';
+        case 'rejected':
+          return 'Please review your business details or contact support.';
+        default:
+          return 'Your business profile is submitted successfully.';
+      }
+    }
+
+    switch (status) {
+      case 'verified':
+        return 'Your driver profile has been verified successfully.';
+      case 'rejected':
+        return 'Please review your driver verification details or contact support.';
+      default:
+        return 'Your driver profile is under review.';
+    }
+  }
+
+  Color _verificationStatusColor(String status) {
+    switch (status) {
+      case 'verified':
+        return Colors.green;
+      case 'rejected':
+        return const Color(0xFFDC2626);
+      default:
+        return _goOutsBlue;
+    }
+  }
+
+  IconData _verificationStatusIcon(String status) {
+    switch (status) {
+      case 'verified':
+        return Icons.verified_rounded;
+      case 'rejected':
+        return Icons.error_outline_rounded;
+      default:
+        return Icons.hourglass_top_rounded;
+    }
+  }
+
+  void _launchTerms() {
+    showTermsSheet(context);
+  }
+
+  // Added 18 September 2026 — App Store / Play Store submission requires a
+  // privacy policy reachable from inside the app, not just in the store
+  // listing. Points at the real, live policy on the marketing site rather
+  // than duplicating that text here.
+  Future<void> _launchPrivacyPolicy() async {
+    final Uri uri = Uri.parse('https://www.goouts.co.uk/privacy.html');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  // ── Account deletion — added 21 September 2026 ──────────────────────────
+  // Two-step confirmation (this dialog, then a typed "DELETE") before
+  // anything irreversible happens — deleting the wrong account by a
+  // misplaced tap is exactly the kind of thing a single confirm button lets
+  // through.
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final TextEditingController confirmCtrl = TextEditingController();
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          final bool canConfirm =
+              confirmCtrl.text.trim().toUpperCase() == 'DELETE';
+          return AlertDialog(
+            title: const Text('Delete your account?'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text(
+                  'This cannot be undone. Your name, email, phone number, '
+                  'address, photos and ID documents will be permanently '
+                  'removed and you will be signed out immediately.\n\n'
+                  'Type DELETE to confirm.',
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: confirmCtrl,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    hintText: 'DELETE',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (_) => setDialogState(() {}),
+                ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: canConfirm
+                    ? () => Navigator.of(dialogCtx).pop(true)
+                    : null,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFDC2626),
+                ),
+                child: const Text('Delete Permanently'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    await _deleteAccount(context);
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    setState(() => _deleting = true);
+    try {
+      // Server-side: verified by the caller's own Firebase ID token
+      // (request.auth.uid), so this can only ever delete the signed-in
+      // user's own account — see functions/index.js deleteMyAccount.
+      await FirebaseFunctions.instanceFor(region: 'europe-west1')
+          .httpsCallable('deleteMyAccount')
+          .call();
+
+      await FirebaseAuth.instance.signOut();
+      if (!context.mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute<void>(
+          builder: (_) => const RoleSelectionScreen(),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      setState(() => _deleting = false);
+      showDialog<void>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Could not delete account'),
+          content: Text('Please try again, or contact support if this keeps happening.\n\n$e'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildInfoTile({required IconData icon, required String title, required String value}) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            clipBehavior: Clip.antiAlias,
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: _goOutsBlue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: _goOutsBlue),
+          ),
+          SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                AutoSizeText(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 5),
+                AutoSizeText(
+                  value.trim().isEmpty ? 'Not set' : value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.4,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerificationCard({
+    required bool isBusiness,
+    required String status,
+  }) {
+    final Color accentColor = _verificationStatusColor(status);
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accentColor.withValues(alpha: 0.25)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            clipBehavior: Clip.antiAlias,
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              _verificationStatusIcon(status),
+              color: accentColor,
+            ),
+          ),
+          SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                AutoSizeText(
+                  _buildVerificationStatusLabel(status: status, isBusiness: isBusiness),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: accentColor,
+                  ),
+                ),
+                SizedBox(height: 6),
+                AutoSizeText(
+                  _buildVerificationDescription(status: status, isBusiness: isBusiness),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.45,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('No logged-in account found.'),
+        ),
+      );
+    }
+
+    return FutureBuilder<_CurrentAccount?>(
+      future: _accountFuture,
+      builder: (BuildContext context, AsyncSnapshot<_CurrentAccount?> accountSnapshot) {
+        if (accountSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: _screenBackground,
+            body: Center(
+              child: CircularProgressIndicator(color: _goOutsBlue),
+            ),
+          );
+        }
+
+        final _CurrentAccount? account = accountSnapshot.data;
+        if (account == null) {
+          return const Scaffold(
+            body: Center(
+              child: Text('No logged-in account found.'),
+            ),
+          );
+        }
+
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection(account.collection)
+              .doc(account.uid)
+              .snapshots(),
+          builder: (BuildContext context,
+              AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                backgroundColor: _screenBackground,
+                body: Center(
+                  child: CircularProgressIndicator(color: _goOutsBlue),
+                ),
+              );
+            }
+
+            final Map<String, dynamic>? data = snapshot.data?.data();
+            final String displayName = _buildDisplayName(
+              data: data,
+              currentUser: currentUser,
+              isBusiness: account.isBusiness,
+            );
+            final String phoneNumber = _buildPhoneNumber(data, currentUser);
+            final String email = _buildEmail(data);
+            final String referralCode = _buildReferralCode(
+              data: data,
+              uid: account.uid,
+              isBusiness: account.isBusiness,
+            );
+            final String verificationStatus = _buildVerificationStatus(
+              data: data,
+              isBusiness: account.isBusiness,
+            );
+            final String city = _buildCity(data);
+            final String country = _buildCountry(data);
+            final String postcode = _buildPostcode(data);
+            final String addressLine = _buildAddressLine(data);
+            final String photoUrl = _readString(
+              data,
+              const <String>['profilePhotoUrl', 'selfieUrl'],
+              fallback: _readNestedString(data, const <String>['profileImage', 'photoUrl']),
+            );
+
+            final String roleLabel = account.isBusiness ? 'Lead Partner' : 'Driver';
+            final String businessName = _buildBusinessName(data);
+            final String companyNumber = _buildCompanyNumber(data);
+            final String vehicleType = _buildVehicleType(data);
+            final bool termsAccepted = _readBool(
+              data,
+              const <String>['termsAccepted'],
+              fallback: _readBool(data, const <String>['acceptedTerms']),
+            );
+
+            return Scaffold(
+              backgroundColor: _screenBackground,
+              appBar: AppBar(
+                backgroundColor: _goOutsBlue,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                centerTitle: true,
+                title: Text(
+                  account.isBusiness ? 'Business Profile' : 'Driver Profile',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          CircleAvatar(
+                            radius: 42,
+                            backgroundColor: _goOutsBlue.withValues(alpha: 0.12),
+                            backgroundImage: photoUrl.trim().isNotEmpty ? NetworkImage(photoUrl) : null,
+                            child: photoUrl.trim().isEmpty
+                                ? Icon(
+                                    account.isBusiness ? Icons.storefront_rounded : Icons.person_rounded,
+                                    size: 40,
+                                    color: _goOutsBlue,
+                                  )
+                                : null,
+                          ),
+                          SizedBox(height: 14),
+                          AutoSizeText(
+                            displayName,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          AutoSizeText(
+                            roleLabel,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (phoneNumber.trim().isNotEmpty) ...<Widget>[
+                            SizedBox(height: 6),
+                            AutoSizeText(
+                              phoneNumber,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                          if (email.trim().isNotEmpty) ...<Widget>[
+                            SizedBox(height: 4),
+                            AutoSizeText(
+                              email,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _buildVerificationCard(
+                      isBusiness: account.isBusiness,
+                      status: verificationStatus,
+                    ),
+                    _buildInfoTile(
+                      icon: Icons.badge_outlined,
+                      title: 'Referral Code',
+                      value: referralCode,
+                    ),
+                    if (account.isBusiness) ...<Widget>[
+                      _buildInfoTile(
+                        icon: Icons.business_rounded,
+                        title: 'Legal Business Name',
+                        value: businessName,
+                      ),
+                      _buildInfoTile(
+                        icon: Icons.numbers_rounded,
+                        title: 'Business / Company Number',
+                        value: companyNumber,
+                      ),
+                    ] else ...<Widget>[
+                      _buildInfoTile(
+                        icon: Icons.two_wheeler_rounded,
+                        title: 'Vehicle Type',
+                        value: vehicleType,
+                      ),
+                    ],
+                    _buildInfoTile(
+                      icon: Icons.location_city_rounded,
+                      title: 'City',
+                      value: city,
+                    ),
+                    _buildInfoTile(
+                      icon: Icons.public_rounded,
+                      title: 'Country',
+                      value: country,
+                    ),
+                    _buildInfoTile(
+                      icon: Icons.markunread_mailbox_outlined,
+                      title: 'Postcode',
+                      value: postcode,
+                    ),
+                    _buildInfoTile(
+                      icon: Icons.home_work_outlined,
+                      title: account.isBusiness ? 'Shop No/Name & Street / Road Name' : 'House No/Name & Street',
+                      value: addressLine,
+                    ),
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              const Icon(Icons.rule_folder_outlined, color: _goOutsBlue),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  termsAccepted ? 'Terms accepted' : 'Terms not confirmed yet',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: _launchTerms,
+                            icon: const Icon(Icons.open_in_new_rounded),
+                            label: const Text('Open Terms & Conditions'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _goOutsBlue,
+                              side: const BorderSide(color: _goOutsBlue),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            onPressed: _launchPrivacyPolicy,
+                            icon: const Icon(Icons.privacy_tip_outlined),
+                            label: const Text('Open Privacy Policy'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _goOutsBlue,
+                              side: const BorderSide(color: _goOutsBlue),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // ── Danger zone — added 21 September 2026, App Store /
+                    // Play Store submission requirement (Apple 5.1.1(v),
+                    // Google Play Account Deletion policy): a real in-app
+                    // way to delete the account, not just a support ticket.
+                    Container(
+                      clipBehavior: Clip.antiAlias,
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 14),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Row(
+                            children: <Widget>[
+                              Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
+                              SizedBox(width: 10),
+                              Text(
+                                'Danger Zone',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Permanently delete your account. Your name, email, phone, address, photos and ID documents are removed immediately. Earnings and payout history are kept for the period required by UK tax law, with your personal details cleared from them.',
+                            style: TextStyle(fontSize: 13, color: Colors.black54, height: 1.45),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: _deleting
+                                ? null
+                                : () => _confirmDeleteAccount(context),
+                            icon: _deleting
+                                ? const SizedBox(
+                                    width: 16, height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.delete_forever_rounded),
+                            label: Text(_deleting ? 'Deleting…' : 'Delete My Account'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFDC2626),
+                              side: const BorderSide(color: Color(0xFFDC2626)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _CurrentAccount {
+  final String uid;
+  final String collection;
+  final bool isBusiness;
+
+  const _CurrentAccount({
+    required this.uid,
+    required this.collection,
+    required this.isBusiness,
+  });
+}
